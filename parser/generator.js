@@ -106,14 +106,16 @@ ${body}
     if (tag === 'Spacer') return `${this.pad()}Spacer()`;
     if (tag === 'Div') return `${this.pad()}Divider()`;
 
-    // Handle preset elements
-    if (preset && presets[tag] && presets[tag][preset]) {
-      return this.generatePreset(node);
+    // Handle presets via registry
+    const presetDef = this.lookupPreset(tag, preset);
+    if (presetDef) {
+      return this.generateFromPreset(node, presetDef);
     }
 
-    // Handle default presets (like TF without explicit preset)
+    // Handle default TF (no preset) — uses _default entry
     if (tag === 'TF' && !preset) {
-      return this.generateDefaultTF(node);
+      const def = presets.TF && presets.TF._default;
+      if (def) return this.generateTextField(node, def);
     }
 
     // Handle containers (have children)
@@ -125,56 +127,119 @@ ${body}
     return this.generateLeaf(node);
   }
 
-  generatePreset(node) {
-    const { tag, preset, args, modifiers } = node;
-    const presetFn = presets[tag][preset];
+  // Look up a preset in the registry
+  lookupPreset(tag, preset) {
+    if (!preset) return null;
+    return presets[tag] && presets[tag][preset] || null;
+  }
 
-    // Get the label/text from the first positional arg
-    const label = this.getFirstStringArg(args);
-    const result = presetFn(label);
-
-    const lines = [];
-
-    if (result.isContainer && node.children.length > 0) {
-      // Container preset (like V.card)
-      lines.push(`${this.pad()}VStack {`);
-      this.indent++;
-      lines.push(this.generateElements(node.children));
-      this.indent--;
-      lines.push(`${this.pad()}}`);
-      for (const mod of result.modifiers) {
-        lines.push(`${this.pad()}${mod}`);
-      }
-    } else {
-      // Leaf preset (like B.cta, V.badge)
-      const swiftLines = result.swift.split('\n');
-      lines.push(`${this.pad()}${swiftLines[0]}`);
-      for (let i = 1; i < swiftLines.length; i++) {
-        lines.push(`${this.pad()}${swiftLines[i]}`);
-      }
-      for (const mod of result.modifiers) {
-        lines.push(`${this.pad()}${mod}`);
-      }
+  // Dispatch to the right generation strategy based on preset type
+  generateFromPreset(node, def) {
+    switch (def.type) {
+      case 'struct':
+        return this.generateStructPreset(node, def);
+      case 'modifier':
+        return this.generateModifierPreset(node, def);
+      case 'containerModifier':
+        return this.generateContainerModifierPreset(node, def);
+      case 'leafModifier':
+        return this.generateLeafModifierPreset(node, def);
+      case 'textField':
+        return this.generateTextField(node, def);
+      default:
+        return this.generateLeaf(node);
     }
+  }
 
-    // Append any additional modifiers from the DSL
+  // struct preset: emit helper struct call — CTAButton(label: "Sign In")
+  generateStructPreset(node, def) {
+    const { modifiers } = node;
+    const label = escapeSwift(this.getFirstStringArg(node.args));
+    const lines = [];
+    lines.push(`${this.pad()}${def.swift}(${def.argKey}: "${label}")`);
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
-
     return lines.join('\n');
   }
 
-  generateDefaultTF(node) {
-    const { args, modifiers } = node;
-    const placeholder = this.getFirstStringArg(args);
-    const result = presets.TF._default(placeholder);
-
+  // modifier preset: emit base view + .modifier() — Button("X", action: {}).btnText()
+  generateModifierPreset(node, def) {
+    const { tag, modifiers } = node;
     const lines = [];
-    lines.push(`${this.pad()}${result.swift}`);
-    for (const mod of result.modifiers) {
-      lines.push(`${this.pad()}${mod}`);
+
+    // Emit the base view (e.g. Button)
+    if (tag === 'B') {
+      const label = escapeSwift(this.getFirstStringArg(node.args));
+      lines.push(`${this.pad()}Button("${label}", action: {})`);
+    } else {
+      // Fallback: generate as a regular leaf then append
+      return this.generateLeaf(node);
     }
+
+    // Append the preset modifier
+    lines.push(`${this.pad()}.${def.swift}()`);
+
+    // Append user modifiers
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // containerModifier preset: emit VStack { children }.card()
+  generateContainerModifierPreset(node, def) {
+    const { modifiers, children } = node;
+    const lines = [];
+
+    lines.push(`${this.pad()}VStack {`);
+    this.indent++;
+    lines.push(this.generateElements(children));
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+
+    // Append the preset modifier
+    lines.push(`${this.pad()}.${def.swift}()`);
+
+    // Append user modifiers
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // leafModifier preset: emit a different view + .modifier() — Text("X").badge()
+  generateLeafModifierPreset(node, def) {
+    const { modifiers } = node;
+    const label = escapeSwift(this.getFirstStringArg(node.args));
+    const lines = [];
+
+    // Emit the view specified by the preset
+    if (def.viewTag === 'Text') {
+      lines.push(`${this.pad()}Text("${label}")`);
+    } else {
+      lines.push(`${this.pad()}${def.viewTag}("${label}")`);
+    }
+
+    // Append the preset modifier
+    lines.push(`${this.pad()}.${def.swift}()`);
+
+    // Append user modifiers
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // TextField/SecureField preset
+  generateTextField(node, def) {
+    const { modifiers } = node;
+    const placeholder = escapeSwift(this.getFirstStringArg(node.args));
+    const lines = [];
+
+    lines.push(`${this.pad()}${def.view}("${placeholder}", text: .constant(""))`);
+    lines.push(`${this.pad()}.textFieldStyle(.roundedBorder)`);
+
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }

@@ -43,13 +43,30 @@ parser/
   index.js         — entry point (CLI + importable via require)
   tokenizer.js     — tokenizes .design files
   parser.js        — recursive descent parser → AST
-  generator.js     — AST → SwiftUI code
-  presets.js       — component preset definitions (B.cta, V.card, etc.)
+  generator.js     — AST → SwiftUI code (thin — delegates styling to Swift)
+  presets.js       — preset registry (maps preset names to generation strategies)
 examples/          — example .design files
 design/            — Xcode project
   ContentView.swift  — GENERATED FILE (parser output, never edit manually)
+  Theme.swift        — ViewModifier extensions (btnText, btnLink, badge, card, etc.)
+  Components.swift   — Helper view structs (CTAButton, SecButton)
   designApp.swift    — app entry point (do not touch)
 ```
+
+## v2 Architecture: Swift-Side Styling
+
+Styling responsibility lives in **Swift ViewModifiers**, not in the JS parser:
+
+- **`Theme.swift`** — ViewModifier extensions (`.btnText()`, `.btnLink()`, `.btnGhost()`, `.badge()`, `.card()`, `.cardTitle()`, `.cardBody()`)
+- **`Components.swift`** — Helper structs for buttons that need inner-label styling (`CTAButton`, `SecButton`)
+- **`presets.js`** — Thin registry mapping preset names to strategies (`struct`, `modifier`, `containerModifier`, `leafModifier`, `textField`)
+
+**To add a new preset:**
+1. Add one entry to `presets.js` (e.g., `outline: { type: 'modifier', swift: 'btnOutline' }`)
+2. Add the Swift extension to `Theme.swift` (or a helper struct to `Components.swift`)
+3. Done — the Swift compiler validates it, Xcode previews work
+
+**To customize theme/components:** Edit `Theme.swift` or `Components.swift` directly. These are real Swift files the agent can read and modify.
 
 ---
 
@@ -86,7 +103,9 @@ VS(sp:12) {
 | `B.text("Label")` | Button | Plain style |
 | `B.link("Label")` | Button | Plain + caption font |
 | `B.ghost("Label")` | Button | Borderless |
-| `V.card { }` | VStack | Material bg, rounded, shadow |
+| `V.card { }` | VStack | Material bg, rounded corners |
+| `V.cardTitle { }` | VStack | Headline font for card titles |
+| `V.cardBody { }` | VStack | Body font, secondary color |
 | `V.badge("Label")` | Text | Capsule, colored background |
 | `Spacer` | `Spacer()` | Flex space |
 | `Div` | `Divider()` | Horizontal line |
@@ -229,8 +248,18 @@ VS(p:32, sp:0) {
 - Add `import` statements — the parser adds `import SwiftUI` automatically
 - Use indentation for nesting — always use `{ }`
 
-## Extending the Parser
-- New presets → add to `parser/presets.js`
-- New modifiers → add to `parser/generator.js` (check `expandModifier()`)
-- New element types → add to `TAG_MAP` in `generator.js` and handle in `generateLeaf()`/`generateContainer()`
+## Extending the System
+- **New presets** → add one line to `parser/presets.js` + one Swift extension in `design/Theme.swift` (or struct in `Components.swift`)
+- **New modifiers** → add to `parser/generator.js` (check `expandModifier()`)
+- **New element types** → add to `TAG_MAP` in `generator.js` and handle in `generateLeaf()`/`generateContainer()`
+- **Theme changes** → edit `design/Theme.swift` directly (agent-editable)
 - The parser is zero-dependency Node.js — keep it that way
+
+### Component Patterns (Emmet/Tailwind-style)
+Cards support sub-component presets for structured layouts:
+```
+V.card {
+  V.cardTitle { T("Section Title") }
+  V.cardBody { T("Body content here") }
+}
+```

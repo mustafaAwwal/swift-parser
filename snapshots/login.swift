@@ -17,15 +17,9 @@ struct ContentView: View {
                 SecureField("Password", text: .constant(""))
                 .textFieldStyle(.roundedBorder)
             }
-            Button(action: {}) {
-                Text("Sign In")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            CTAButton(label: "Sign In")
             Button("Forgot Password?", action: {})
-            .buttonStyle(.plain)
+            .btnText()
             .foregroundStyle(.blue)
             Spacer()
             HStack(spacing: 4) {
@@ -33,8 +27,7 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
                 Button("Sign Up", action: {})
-                .buttonStyle(.plain)
-                .font(.caption)
+                .btnLink()
             }
         }
         .padding(24)

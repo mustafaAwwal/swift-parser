@@ -28,4 +28,8 @@ describe('screen snapshots', () => {
   it('calorie onboarding 4', () => {
     assert.equal(compile(loadDesign('calorie-onboarding-4.design')), loadSnapshot('calorie-onboarding-4.swift'));
   });
+
+  it('complex dashboard', () => {
+    assert.equal(compile(loadDesign('complex-dashboard.design')), loadSnapshot('complex-dashboard.swift'));
+  });
 });

@@ -42,13 +42,7 @@ struct ContentView: View {
             }
             Spacer()
             VStack(spacing: 20) {
-                Button(action: {}) {
-                    Text("Continue")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                CTAButton(label: "Continue")
                 HStack(spacing: 6) {
                     Image(systemName: "circle.fill")
                     .font(.system(size: 8))

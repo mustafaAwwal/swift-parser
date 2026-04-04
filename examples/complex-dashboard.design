@@ -1,0 +1,123 @@
+// Complex dashboard screen — stress test for v2
+// Tests: cards, badges, all button types, nested layouts, map, scroll, dividers
+
+Scroll {
+  VS(sp:24, p:20) {
+
+    // Header
+    HS {
+      VS(al:.leading, sp:4) {
+        T("Good Morning").secondary.subheadline
+        T("Dashboard").bold.font(.largeTitle)
+      }
+      Spacer
+      ZS {
+        Img(sys:"circle.fill").f(44).fg(.blue).opacity(0.15)
+        Img(sys:"person.fill").f(20).fg(.blue)
+      }
+    }
+
+    // Stats row
+    HS(sp:12) {
+      V.card {
+        VS(al:.leading, sp:8, p:16) {
+          Img(sys:"flame.fill").f(24).fg(.orange)
+          T("1,847").bold.title2
+          T("Calories").secondary.caption
+        }
+      }
+      V.card {
+        VS(al:.leading, sp:8, p:16) {
+          Img(sys:"figure.walk").f(24).fg(.green)
+          T("8,234").bold.title2
+          T("Steps").secondary.caption
+        }
+      }
+    }
+
+    // Progress section
+    VS(al:.leading, sp:12) {
+      HS {
+        T("Today's Goals").bold.headline
+        Spacer
+        B.text("See All").fg(.blue)
+      }
+
+      V.card {
+        VS(sp:16, p:16) {
+          HS {
+            Img(sys:"drop.fill").fg(.cyan)
+            T("Water Intake").semibold
+            Spacer
+            T("6/8 glasses").secondary.caption
+          }
+          Div
+          HS {
+            Img(sys:"bed.double.fill").fg(.purple)
+            T("Sleep").semibold
+            Spacer
+            T("7h 23m").secondary.caption
+          }
+          Div
+          HS {
+            Img(sys:"heart.fill").fg(.red)
+            T("Heart Rate").semibold
+            Spacer
+            T("72 bpm").secondary.caption
+          }
+        }
+      }
+    }
+
+    // Tags
+    HS(sp:8) {
+      ["Protein","Carbs","Fat","Fiber"].map(V.badge)
+    }
+
+    // Recent meals
+    VS(al:.leading, sp:12) {
+      T("Recent Meals").bold.headline
+      V.card {
+        VS(sp:12, p:16) {
+          HS(sp:12) {
+            ZS {
+              Img(sys:"circle.fill").f(44).fg(.green).opacity(0.15)
+              Img(sys:"leaf.fill").f(20).fg(.green)
+            }
+            VS(al:.leading, sp:2) {
+              T("Grilled Chicken Salad").semibold
+              T("Lunch - 450 cal").secondary.caption
+            }
+            Spacer
+            T("12:30").secondary.caption
+          }
+          Div
+          HS(sp:12) {
+            ZS {
+              Img(sys:"circle.fill").f(44).fg(.orange).opacity(0.15)
+              Img(sys:"cup.and.saucer.fill").f(20).fg(.orange)
+            }
+            VS(al:.leading, sp:2) {
+              T("Oatmeal with Berries").semibold
+              T("Breakfast - 320 cal").secondary.caption
+            }
+            Spacer
+            T("8:15").secondary.caption
+          }
+        }
+      }
+    }
+
+    // Action buttons — all types
+    VS(sp:12) {
+      B.cta("Log New Meal")
+      B.sec("View Full Report")
+      HS(sp:16) {
+        B.ghost("Settings")
+        Spacer
+        B.link("Terms of Use")
+      }
+    }
+
+  }
+}
