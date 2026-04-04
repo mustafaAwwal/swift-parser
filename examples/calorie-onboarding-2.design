@@ -1,0 +1,29 @@
+VS(p:32, sp:0) {
+  Spacer
+
+  ZS {
+    Img(sys:"circle.fill").f(200).fg(.orange).opacity(0.12)
+    Img(sys:"circle.fill").f(150).fg(.orange).opacity(0.2)
+    Img(sys:"circle.fill").f(90).fg(.orange).opacity(0.4)
+    Img(sys:"fork.knife").f(44).fg(.white)
+  }
+
+  Spacer
+
+  VS(sp:12) {
+    T("Log Meals").bold.font(.largeTitle)
+    T("In Seconds").bold.font(.largeTitle).fg(.orange)
+    T("Snap a photo or search from over 1 million foods. AI does the rest.").secondary.font(.body).multiline(.center)
+  }
+
+  Spacer
+
+  VS(sp:20) {
+    B.cta("Continue")
+    HS(sp:6) {
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+      Img(sys:"circle.fill").f(8).fg(.orange)
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+    }
+  }
+}
