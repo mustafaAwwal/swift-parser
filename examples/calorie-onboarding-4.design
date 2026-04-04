@@ -1,0 +1,38 @@
+VS(p:24, sp:24) {
+  VS(sp:8) {
+    T("About You").bold.font(.largeTitle)
+    T("Help us personalize your experience.").secondary
+  }
+
+  VS(sp:16) {
+    VS(sp:6) {
+      T("Age").bold.caption
+      TF("25")
+    }
+    VS(sp:6) {
+      T("Height").bold.caption
+      TF("5 ft 10 in")
+    }
+    VS(sp:6) {
+      T("Current Weight").bold.caption
+      TF("165 lbs")
+    }
+    VS(sp:6) {
+      T("Goal Weight").bold.caption
+      TF("150 lbs")
+    }
+  }
+
+  Spacer
+
+  VS(sp:20) {
+    B.cta("Continue")
+    HS(sp:6) {
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+      Img(sys:"circle.fill").f(8).fg(.blue)
+      Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)
+    }
+  }
+}
