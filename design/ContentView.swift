@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        AutoCaptureView()
+        Text("Build a screen to see it here")
     }
 }
 
