@@ -1,4 +1,5 @@
 sample-images
 node_modules/
 agent-output/
+eval/runs/
 package-lock.json

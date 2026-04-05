@@ -4,36 +4,20 @@
 
 A **shorthand DSL and JS parser** that converts compact notation into full SwiftUI code. It dramatically reduces token output from a design agent (Claude via Agent SDK) so screen generation drops from ~5 minutes to under a minute.
 
-**The user never sees code** — they only see the final screenshot. This is image generation to them.
+**The user never sees code** — they only see the final screenshot. This is image generation to them. Static screenshots only — no animations, state, or interactivity matter.
 
 ## Architecture
 
 ```
 Design Agent (Claude) → writes .design shorthand
         ↓
-Parser (Node.js) → expands to design/ContentView.swift
+Parser (Node.js) → expands to SwiftUI .swift files
+        ↓
+swiftc -typecheck → validates per-screen (catches errors before build)
         ↓
 xcodebuild → compiles Xcode project on iOS Simulator
         ↓
-simctl screenshot → returned to user
-```
-
-## Pipeline Commands
-
-```bash
-# Parse .design → Swift
-node parser/index.js <input.design> [output.swift]
-# Default output: design/ContentView.swift
-
-# Build
-xcodebuild -project design.xcodeproj -scheme design -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
-
-# Install + launch + screenshot
-xcrun simctl terminate "iPhone 17 Pro" com.awwal.design || true
-xcrun simctl install "iPhone 17 Pro" <path-to-derived-data>/design.app
-xcrun simctl launch "iPhone 17 Pro" com.awwal.design
-sleep 2
-xcrun simctl io "iPhone 17 Pro" screenshot output.png
+AutoCaptureView + Express server → screenshots returned to user
 ```
 
 ## File Structure
@@ -41,50 +25,87 @@ xcrun simctl io "iPhone 17 Pro" screenshot output.png
 ```
 parser/
   index.js         — entry point (CLI + importable via require)
-  tokenizer.js     — tokenizes .design files
-  parser.js        — recursive descent parser → AST
-  generator.js     — AST → SwiftUI code (thin — delegates styling to Swift)
+  tokenizer.js     — tokenizes .design files (supports #hex, strings, numbers, etc.)
+  parser.js        — recursive descent parser → AST (handles LG() as arg values, gradient types)
+  generator.js     — AST → SwiftUI code (600+ lines — handles all elements, modifiers, presets)
   presets.js       — preset registry (maps preset names to generation strategies)
-examples/          — example .design files
+  test.js          — snapshot tests (5 cases)
+  agent/
+    run.js         — original batch agent runner (20 screens at once)
+    tools.js       — MCP tools for the design agent (10 tools)
+    server.js      — Express server for screenshot capture via simctl
+    swift-gen.js   — generates AutoCaptureView.swift + ContentView.swift for batch capture
+
+eval/                — NEW: Single-screen evaluation system
+  run.js           — CLI: node eval/run.js <screen-numbers> (single, range, or batch)
+  tools.js         — MCP tools for eval agent (overview, reference, write, review, theme/component editing)
+  report.js        — generates report.json + report.md per screen
+  runs/            — output per screen (gitignored)
+    screen-N/
+      input.png, output.design, compiled.swift, output.png,
+      review.json, report.json, report.md, agent-log.json
+
+examples/          — example .design files (5 reference screens)
+sample-images/     — 100 Taco Bell reference screenshots (gitignored)
+agent-output/      — old batch agent output (gitignored)
+
 design/            — Xcode project
   ContentView.swift  — GENERATED FILE (parser output, never edit manually)
-  Theme.swift        — ViewModifier extensions (btnText, btnLink, badge, card, etc.)
-  Components.swift   — Helper view structs (CTAButton, SecButton)
+  Theme.swift        — ViewModifier extensions + Color(hex:) init
+  Components.swift   — Helper view structs (CTAButton, SecButton, FloatingTextField, SearchBar, ImagePlaceholder)
   designApp.swift    — app entry point (do not touch)
 ```
 
-## v2 Architecture: Swift-Side Styling
+## Pipeline Commands
 
-Styling responsibility lives in **Swift ViewModifiers**, not in the JS parser:
+```bash
+# Parse .design → Swift
+node parser/index.js <input.design> [output.swift]
 
-- **`Theme.swift`** — ViewModifier extensions (`.btnText()`, `.btnLink()`, `.btnGhost()`, `.badge()`, `.card()`, `.cardTitle()`, `.cardBody()`)
-- **`Components.swift`** — Helper structs for buttons that need inner-label styling (`CTAButton`, `SecButton`)
-- **`presets.js`** — Thin registry mapping preset names to strategies (`struct`, `modifier`, `containerModifier`, `leafModifier`, `textField`)
+# Run eval on a single screen
+node eval/run.js 5
 
-**To add a new preset:**
-1. Add one entry to `presets.js` (e.g., `outline: { type: 'modifier', swift: 'btnOutline' }`)
-2. Add the Swift extension to `Theme.swift` (or a helper struct to `Components.swift`)
-3. Done — the Swift compiler validates it, Xcode previews work
+# Run eval on a range
+node eval/run.js 0-10
 
-**To customize theme/components:** Edit `Theme.swift` or `Components.swift` directly. These are real Swift files the agent can read and modify.
+# Run tests
+cd parser && node --test test.js
+
+# Build
+xcodebuild -project design.xcodeproj -scheme design -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+
+# Validate a single Swift file
+swiftc -typecheck -sdk "$(xcrun --show-sdk-path --sdk iphonesimulator)" -target arm64-apple-ios18.0-simulator design/Theme.swift design/Components.swift <file.swift>
+```
+
+## Eval System
+
+The eval runner (`eval/run.js`) evaluates the DSL system by having an agent recreate reference screenshots:
+
+**Pipeline per screen:**
+1. Agent reads reference screenshot → writes .design DSL (one-shot)
+2. Runner compiles DSL → Swift, validates with `swiftc -typecheck`
+3. Builds Xcode project, captures screenshot via AutoCaptureView + Express server
+4. Agent reviews its own output vs reference, submits structured self-assessment
+5. Report generated with timing, tokens, compression ratio, agent feedback
+
+**Batch mode:** Screens run in 3 phases:
+- Phase 1 (parallel): All agents write DSL concurrently
+- Phase 2 (sequential): Compile all → build once → screenshot all via Express server
+- Phase 3 (parallel): All agents review concurrently
+
+**Build safety:** 3 layers of defense against failed builds:
+1. `write_design` tool runs `swiftc -typecheck` — agent gets immediate error feedback
+2. Pre-build validation removes bad screens before batch build
+3. Build isolation retry — parse xcodebuild errors, remove offending file, retry
+
+**⚠ Parallel caveat:** When agents run in parallel and have `edit_theme`/`edit_components` tools, they can stomp on each other's edits. For batch runs with component editing, run screens sequentially or accept that Theme.swift may be inconsistent.
+
+**Reports include:** timing breakdown, token usage, DSL→Swift compression ratio, agent self-review (score 1-10, strengths, shortcomings, missing modifiers, missing components, suggested tools, DSL pain points). Batch runs aggregate feedback across all screens.
 
 ---
 
 # DSL Rules & Reference
-
-## Nesting: Brackets, Not Indentation
-
-All nesting uses `{ }`. Indentation is cosmetic only.
-
-```
-VS(sp:12) {
-  T("Hello")
-  HS(sp:4) {
-    Img(sys:"star.fill")
-    T("4.8")
-  }
-}
-```
 
 ## Core Elements
 
@@ -98,8 +119,13 @@ VS(sp:12) {
 | `Img("name")` | `Image("name")` | Asset image |
 | `TF("placeholder")` | `TextField` | Auto `.textFieldStyle(.roundedBorder)` |
 | `TF.secure("placeholder")` | `SecureField` | Password field |
-| `B.cta("Label")` | Button | Prominent, full-width, large |
-| `B.sec("Label")` | Button | Bordered, full-width, large |
+| `TF.search("Search...")` | `SearchBar` | Search bar with icon |
+| `TF.search("Search...", "query")` | `SearchBar` | Search bar with value |
+| `TF.float("Label")` | `FloatingTextField` | Floating label (empty) |
+| `TF.float("Label", "Value")` | `FloatingTextField` | Floating label (filled) |
+| `TF.floatSecure("Password")` | `FloatingSecureField` | Secure floating label |
+| `B.cta("Label")` | `CTAButton` | Prominent, full-width, large |
+| `B.sec("Label")` | `SecButton` | Bordered, full-width, large |
 | `B.text("Label")` | Button | Plain style |
 | `B.link("Label")` | Button | Plain + caption font |
 | `B.ghost("Label")` | Button | Borderless |
@@ -107,17 +133,19 @@ VS(sp:12) {
 | `V.cardTitle { }` | VStack | Headline font for card titles |
 | `V.cardBody { }` | VStack | Body font, secondary color |
 | `V.badge("Label")` | Text | Capsule, colored background |
+| `Img.placeholder(h:200, color:.orange, icon:"fork.knife")` | `ImagePlaceholder` | Colored rect with icon |
+| `Seg("A", "B", active:0)` | `Picker` | Native segmented control |
+| `Tab(tint:#520080, active:1) { Tab.item(...) }` | `TabView` | Native iOS 26 tab bar (liquid glass) |
+| `TC { T("plain ") T("bold").bold }` | Text + | Concatenated inline text |
+| `LG(.purple, .black, dir:.down)` | `LinearGradient` | Gradient (element or value) |
 | `Spacer` | `Spacer()` | Flex space |
 | `Div` | `Divider()` | Horizontal line |
 | `Scroll` | `ScrollView` | Scrollable container |
-| `SF("placeholder")` | `SecureField` | Alt secure field syntax |
-| `Rect` | `Rectangle()` | Shape (image placeholder, bg) |
+| `Rect` | `Rectangle()` | Shape |
 | `Circle` | `Circle()` | Circle shape |
 | `Capsule` | `Capsule()` | Capsule shape |
 
 ## Container Arguments
-
-Arguments in `()` on containers. Named with `:`.
 
 | Arg | SwiftUI | Example |
 |-----|---------|---------|
@@ -128,11 +156,9 @@ Arguments in `()` on containers. Named with `:`.
 | `py:16` | `.padding(.vertical, 16)` | Becomes modifier |
 | `r:12` | `.clipShape(RoundedRectangle(cornerRadius: 12))` | Becomes modifier |
 
-**All spacing/padding values are literal points.** `p:16` = 16pt. No multipliers, no mapping. The number IS the value.
-
 ## Modifiers (dot-chained after element)
 
-### Font Styles (SwiftUI names, no args)
+### Font Styles (no args)
 `.largeTitle` `.title` `.title2` `.title3` `.headline` `.subheadline` `.body` `.callout` `.caption` `.caption2` `.footnote`
 
 ### Font Weights (no args)
@@ -141,139 +167,137 @@ Arguments in `()` on containers. Named with `:`.
 ### Foreground Styles (no args)
 `.secondary` `.tertiary` `.quaternary`
 
-### Text Decoration (no args)
-`.underline` `.italic`
+### Text
+`.underline` `.italic` `.tracking(2)` `.lineLimit(2)` `.lineSpacing(4)` `.multiline(.center)`
 
-### Layout (no args)
-`.ignoresSafeArea`
+### Layout
+`.ignoresSafeArea` `.offset(x:10, y:-5)`
 
 ### With Arguments
 | Modifier | SwiftUI | Example |
 |----------|---------|---------|
-| `.fg(.color)` | `.foregroundStyle(.color)` | `.fg(.blue)` |
-| `.bg(.color)` | `.background(.color)` | `.bg(.red)` |
+| `.fg(.color)` | `.foregroundStyle(.color)` | `.fg(.blue)` `.fg(#FF6600)` `.fg(LG(.red,.blue,dir:.right))` |
+| `.bg(.color)` | `.background(.color)` | `.bg(.red)` `.bg(#1A0A2E)` `.bg(LG(.purple,.black))` |
 | `.f(size)` | `.font(.system(size:))` | `.f(24)` |
 | `.font(.style)` | `.font(.style)` | `.font(.largeTitle)` |
-| `.tracking(val)` | `.tracking(val)` | `.tracking(2)` |
-| `.frame(w:,h:)` | `.frame(width:,height:)` | `.frame(w:100,h:50)` |
-| `.frame(maxW:.inf)` | `.frame(maxWidth:.infinity)` | |
+| `.frame(w:,h:)` | `.frame(width:,height:)` | `.frame(w:100,h:50)` `.frame(maxW:.inf)` |
 | `.opacity(val)` | `.opacity(val)` | `.opacity(0.3)` |
-| `.multiline(.center)` | `.multilineTextAlignment(.center)` | |
-| `.p(val)` | `.padding(val)` | `.p(16)` |
-| `.px(val)` | `.padding(.horizontal,val)` | `.px(8)` |
-| `.py(val)` | `.padding(.vertical,val)` | `.py(8)` |
-| `.pt(val)` | `.padding(.top,val)` | `.pt(8)` |
-| `.pb(val)` | `.padding(.bottom,val)` | `.pb(8)` |
-| `.pl(val)` | `.padding(.leading,val)` | `.pl(8)` |
-| `.pr(val)` | `.padding(.trailing,val)` | `.pr(8)` |
+| `.p(val)` `.px` `.py` `.pt` `.pb` `.pl` `.pr` | `.padding(...)` | `.p(16)` `.px(8)` |
 | `.r(val)` | `.clipShape(RoundedRectangle(...))` | `.r(12)` |
-| `.offset(x:,y:)` | `.offset(x:,y:)` | `.offset(x:10, y:-5)` |
+| `.shadow(.color, r:N, x:N, y:N)` | `.shadow(...)` | `.shadow(.black, r:4, x:0, y:2)` |
 
 ### Shapes & Borders
-| Modifier | What it does | Example |
-|----------|-------------|---------|
-| `.stroke(.color)` | Shape outline | `Rect.stroke(.gray)` |
-| `.stroke(.color, w:2)` | Shape outline with width | `Rect.stroke(.purple, w:2)` |
-| `.border(.color)` | Container border (8pt radius) | `.border(.gray)` |
-| `.border(.color, r:12)` | Border with custom radius | `.border(.blue, r:12)` |
-| `.border(.color, w:2, r:12)` | Border with width + radius | `.border(.gray, w:2, r:12)` |
-| `.clipShape(Capsule)` | Clip to capsule | `.clipShape(Capsule)` |
-| `.clipShape(Circle)` | Clip to circle | `.clipShape(Circle)` |
+| Modifier | Example |
+|----------|---------|
+| `.stroke(.color)` | `Rect.stroke(.gray)` |
+| `.stroke(.color, w:2)` | `Rect.stroke(.purple, w:2)` |
+| `.border(.color)` | `.border(.gray)` (8pt radius default) |
+| `.border(.color, r:12)` | `.border(.blue, r:12)` |
+| `.border(.color, w:2, r:Capsule)` | Capsule-shaped border |
+| `.clipShape(Capsule)` | `.clipShape(Circle)` |
 
-### Overlay (layer DSL content on top)
+### Overlay
 ```
 Circle.fg(.blue).overlay { Img(sys:"plus").f(14).fg(.white) }
 ```
-Use `{ }` braces — DSL elements inside get parsed and expanded.
 
-### Color chaining
-Colors support method chaining: `.fg(.white.opacity(0.8))`, `.bg(.gray.opacity(0.3))`
+## Hex Colors
 
-### No passthrough
-**Only use modifiers listed above.** Unknown modifiers will cause parser errors. If you need something not listed, add it to the generator.
+**Always include `#` prefix.** `#RRGGBB` or `#RRGGBBAA` format.
+```
+.fg(#FF6600) .bg(#1A0A2E) LG(#6B2FA0, #1A0A2E)
+```
+Generates `Color(hex: 0xRRGGBB)` — extension defined in Theme.swift.
+
+## Gradients
+
+`LG()` works as both an element AND inside `.fg()`/`.bg()` modifiers:
+```
+ZS { LG(#6B2FA0, #1A0A2E, dir:.down).ignoresSafeArea  T("Hello") }
+T("Gradient Text").fg(LG(.purple, .orange, dir:.right))
+```
+Directions: `dir:.down` (default), `.up`, `.right`, `.left`
+
+## Tab Bar (native iOS 26 — liquid glass)
+
+```
+Tab(tint:#520080, active:1) {
+  Tab.item("Home", sys:"house") { /* active tab content */ }
+  Tab.item("Menu", sys:"fork.knife")
+  Tab.item("Rewards", sys:"star")
+}
+```
+- `active:N` selects the Nth tab (0-indexed)
+- `tint:` sets accent color
+- Empty tabs get placeholder content automatically
+
+## Segmented Control (native Picker)
+
+```
+Seg("Pickup", "Delivery", active:0)
+```
+
+## Text Concatenation (inline styled text)
+
+```
+TC { T("Agree to ") T("Terms").fg(.blue).underline T(" and ") T("Privacy").fg(.blue).underline }.caption
+```
+Child `T()` elements joined with `+` into one wrapping paragraph.
 
 ## Repetition
 
 ```
-Img(sys:"star.fill")*5           // 5 identical elements
-["News","Sports","Fun"].map(V.badge)  // 3 badges with different labels
+Img(sys:"star.fill")*5
+["News","Sports","Fun"].map(V.badge)
 ```
 
 ## Colors
 
-**Use SwiftUI color names directly.** No aliases, no mapping.
-`.blue` `.red` `.green` `.orange` `.purple` `.pink` `.yellow` `.gray` `.white` `.black` `.primary` `.secondary` `.mint` `.teal` `.cyan` `.indigo` `.brown`
+SwiftUI names: `.blue` `.red` `.green` `.orange` `.purple` `.pink` `.yellow` `.gray` `.white` `.black` `.primary` `.secondary` `.mint` `.teal` `.cyan` `.indigo` `.brown`
 
-## Comments
+Color chaining: `.fg(.white.opacity(0.8))` `.bg(.gray.opacity(0.3))`
 
+---
+
+# Layout Patterns
+
+### Colored header (safe area correct)
 ```
-// This is a comment (single-line only)
+ZS {
+  Rect.fg(#5A2D82).ignoresSafeArea
+  VS(p:16) { /* header content stays in safe area */ }
+}
+```
+**NEVER** use `.pt(60)` to push below notch. **NEVER** put `.ignoresSafeArea` on the content VS.
+
+### Full-screen gradient background
+```
+ZS { LG(#6B2FA0, #1A0A2E).ignoresSafeArea  VS(p:32) { content } }
+```
+
+### Pill/capsule border
+```
+HS { content }.px(24).py(12).border(.white, w:2, r:Capsule)
+```
+
+### Icon with colored background
+```
+ZS { Circle.fg(.blue).frame(w:44,h:44) Img(sys:"plus").fg(.white) }
 ```
 
 ---
 
 # Rules for the Design Agent
 
-## String Safety
-- The parser auto-escapes quotes, backslashes, and newlines in strings for Swift output.
-- You can safely use apostrophes and special characters: `T("It's 5'10\"")` works.
-- Avoid unnecessary complexity in strings — keep text simple and readable.
-
-## DSL Writing Rules
-1. **One screen per .design file.** Each file produces one ContentView.
+## Critical Rules
+1. **One screen per .design file.** Each file produces one view.
 2. **Bracket nesting only.** Every container with children uses `{ }`.
 3. **Literal point values.** `p:24` means 24pt. No math, no scales, no multipliers.
-4. **Use SwiftUI's own names** for fonts, colors, weights. Don't invent abbreviations the parser doesn't know.
-5. **Modifier order matters.** `.padding().background()` ≠ `.background().padding()` — same in the DSL.
-6. **Prefer presets** over manual styling. `B.cta("Go")` over building a button from scratch.
-
-## Layout Patterns (Proven)
-
-### Hero with layered circles
-```
-ZS {
-  Img(sys:"circle.fill").f(200).fg(.green).opacity(0.12)
-  Img(sys:"circle.fill").f(150).fg(.green).opacity(0.2)
-  Img(sys:"circle.fill").f(90).fg(.green).opacity(0.4)
-  Img(sys:"flame.fill").f(44).fg(.white)
-}
-```
-
-### Page indicator dots
-```
-HS(sp:6) {
-  Img(sys:"circle.fill").f(8).fg(.blue)           // active
-  Img(sys:"circle.fill").f(8).fg(.gray).opacity(0.3)  // inactive
-}
-```
-
-### Form field with label
-```
-VS(sp:6) {
-  T("Label").bold.caption
-  TF("Placeholder")
-}
-```
-
-### Two-tone headline
-```
-VS(sp:8) {
-  T("Track Your").bold.font(.largeTitle)
-  T("Calories").bold.font(.largeTitle).fg(.green)
-}
-```
-
-### Full-screen onboarding layout
-```
-VS(p:32, sp:0) {
-  Spacer
-  // hero content
-  Spacer
-  // text content
-  Spacer
-  // CTA + page dots
-}
-```
+4. **Only use documented modifiers.** Unknown modifiers cause parser errors.
+5. **Modifier order matters.** `.padding().background()` ≠ `.background().padding()`.
+6. **(MANDATORY) Use presets** over manual styling. Check the presets list before building anything by hand.
+7. **(MANDATORY) Colored headers** use ZS + Rect.ignoresSafeArea pattern.
+8. **(MANDATORY) Hex colors** always have `#` prefix.
 
 ## Do NOT
 - Edit `ContentView.swift` manually — it is generated
@@ -282,19 +306,36 @@ VS(p:32, sp:0) {
 - Use string interpolation or computed values in the DSL
 - Add `import` statements — the parser adds `import SwiftUI` automatically
 - Use indentation for nesting — always use `{ }`
+- Use `.pt(60)` or similar hacks to avoid the Dynamic Island
 
 ## Extending the System
-- **New presets** → add one line to `parser/presets.js` + one Swift extension in `design/Theme.swift` (or struct in `Components.swift`)
-- **New modifiers** → add to `parser/generator.js` (check `expandModifier()`)
-- **New element types** → add to `TAG_MAP` in `generator.js` and handle in `generateLeaf()`/`generateContainer()`
-- **Theme changes** → edit `design/Theme.swift` directly (agent-editable)
+- **New presets** → add entry to `parser/presets.js` + Swift extension in `Theme.swift` (or struct in `Components.swift`)
+- **New modifiers** → add to `KNOWN_MODIFIERS` set + `expandModifier()` in `generator.js`
+- **New element types** → add to `TAG_MAP` in `generator.js` + handle in `generateLeaf()`/`generateContainer()`
+- **Theme changes** → edit `design/Theme.swift` directly (agent-editable via tools)
 - The parser is zero-dependency Node.js — keep it that way
 
-### Component Patterns (Emmet/Tailwind-style)
-Cards support sub-component presets for structured layouts:
-```
-V.card {
-  V.cardTitle { T("Section Title") }
-  V.cardBody { T("Body content here") }
-}
-```
+## Preset Strategy Types (presets.js)
+| Type | What it generates | Example |
+|------|-------------------|---------|
+| `struct` | Helper struct call | `CTAButton(label: "Go")` |
+| `modifier` | Base view + modifier | `Button("Go", action: {}).btnText()` |
+| `containerModifier` | Container + modifier | `VStack { ... }.card()` |
+| `leafModifier` | View + modifier | `Text("Label").badge()` |
+| `textField` | TextField/SecureField | `TextField("...", text: .constant(""))` |
+| `floatingField` | FloatingTextField struct | `FloatingTextField(label: "Email", value: "")` |
+| `searchBar` | SearchBar struct | `SearchBar(placeholder: "Search...", value: "query")` |
+| `imagePlaceholder` | ImagePlaceholder struct | `ImagePlaceholder(height: 200, color: .orange)` |
+| `tabItem` | Tab inside TabView | `Tab("Home", systemImage: "house", value: 0) { ... }` |
+
+## Generator Internals (for extending)
+- `expandModifier()` — the big switch for all modifier expansion (~200 lines)
+- `generateContainer()` — handles VS/HS/ZS/Scroll with init params + container modifiers
+- `generateTabView()` / `generateTabItem()` — native iOS 26 TabView generation
+- `generateTextConcat()` — TC { } → Text + Text concatenation
+- `generateLinearGradient()` — LG() expansion (works both as element and arg value)
+- `generateSegmentedPicker()` — Seg() → Picker with .segmented style
+- `generateSearchBar()` / `generateFloatingField()` / `generateImagePlaceholder()` — preset struct generation
+- `argValueToSwift()` — handles string, number, hex, gradient, enum, ident, expr types
+- Frame auto-promotion: when `maxW` or `maxH` present, `w`→`maxWidth`, `h`→`maxHeight`
+- Border shape support: `r:Capsule` and `r:Circle` generate Capsule()/Circle() instead of RoundedRectangle

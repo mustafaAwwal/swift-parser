@@ -1,0 +1,16 @@
+{
+  "name": "design-dsl-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Design DSL — SwiftUI shorthand parser + eval runner",
+  "scripts": {
+    "test": "cd parser && node --test test.js",
+    "agent": "node parser/agent/run.js",
+    "eval": "node eval/run.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "express": "^5.2.1",
+    "zod": "^3.24.0"
+  }
+}

@@ -20,6 +20,9 @@ const TAG_MAP = {
   Circle: 'Circle',
   Capsule: 'Capsule',
   Color: 'Color',
+  LG: 'LinearGradient',
+  TC: 'TextConcat',
+  Seg: 'Picker',
 };
 
 // Modifiers that map to .font(.<name>)
@@ -54,6 +57,8 @@ const KNOWN_MODIFIERS = new Set([
   'tracking',
   // Block modifiers
   'overlay',
+  // With args (misc)
+  'lineLimit', 'shadow', 'lineSpacing',
   // No-arg (handled by FONT_STYLES, FONT_WEIGHTS, FOREGROUND_STYLES, or below)
   'underline', 'italic', 'ignoresSafeArea',
   // Also accept these font/weight/foreground sets
@@ -146,6 +151,16 @@ ${body}
       if (def) return this.generateTextField(node, def);
     }
 
+    // Handle TabView container (Tab without preset)
+    if (tag === 'Tab' && !preset && children.length > 0) {
+      return this.generateTabView(node);
+    }
+
+    // Handle TC (Text Concatenation) — joins child T() with +
+    if (tag === 'TC' && children.length > 0) {
+      return this.generateTextConcat(node);
+    }
+
     // Handle containers (have children)
     if (children.length > 0) {
       return this.generateContainer(node);
@@ -174,6 +189,14 @@ ${body}
         return this.generateLeafModifierPreset(node, def);
       case 'textField':
         return this.generateTextField(node, def);
+      case 'tabItem':
+        return this.generateTabItem(node);
+      case 'floatingField':
+        return this.generateFloatingField(node, def);
+      case 'imagePlaceholder':
+        return this.generateImagePlaceholder(node);
+      case 'searchBar':
+        return this.generateSearchBar(node);
       default:
         return this.generateLeaf(node);
     }
@@ -260,6 +283,129 @@ ${body}
     return lines.join('\n');
   }
 
+  // Generate TabView with Tab children — native iOS 26 TabView
+  // TC { T("plain ") T("bold").bold T(" end") } → Text("plain ") + Text("bold").bold() + Text(" end")
+  generateTextConcat(node) {
+    const { modifiers, children } = node;
+    const lines = [];
+
+    // Generate each child T() as a single-line expression
+    const parts = [];
+    for (const child of children) {
+      if (child.tag !== 'T') continue;
+      const text = escapeSwift(this.getFirstStringArg(child.args));
+      let expr = `Text("${text}")`;
+      for (const mod of child.modifiers) {
+        expr += this.expandModifier(mod);
+      }
+      parts.push(expr);
+    }
+
+    if (parts.length === 0) return `${this.pad()}Text("")`;
+
+    const hasContainerMods = modifiers.length > 0;
+
+    if (hasContainerMods && parts.length > 1) {
+      // Wrap in Group so modifiers apply to the whole concatenated text
+      lines.push(`${this.pad()}Group {`);
+      this.indent++;
+      lines.push(`${this.pad()}${parts[0]} +`);
+      for (let i = 1; i < parts.length; i++) {
+        const sep = i < parts.length - 1 ? ' +' : '';
+        lines.push(`${this.pad()}${parts[i]}${sep}`);
+      }
+      this.indent--;
+      lines.push(`${this.pad()}}`);
+    } else if (parts.length === 1) {
+      lines.push(`${this.pad()}${parts[0]}`);
+    } else {
+      lines.push(`${this.pad()}${parts[0]} +`);
+      for (let i = 1; i < parts.length; i++) {
+        const sep = i < parts.length - 1 ? ' +' : '';
+        lines.push(`${this.pad()}${parts[i]}${sep}`);
+      }
+    }
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  generateTabView(node) {
+    const { args, modifiers, children } = node;
+    const lines = [];
+
+    // Tab(active:1) → TabView(selection: .constant(1))
+    const activeArg = args.find(a => a.type === 'named' && a.key === 'active');
+    const hasActive = !!activeArg;
+    if (hasActive) {
+      lines.push(`${this.pad()}TabView(selection: .constant(${this.argValueToSwift(activeArg.value)})) {`);
+    } else {
+      lines.push(`${this.pad()}TabView {`);
+    }
+    this.indent++;
+
+    let tabIndex = 0;
+    for (const child of children) {
+      if (child.tag === 'Tab' && child.preset === 'item') {
+        lines.push(this.generateTabItem(child, hasActive ? tabIndex : -1));
+        tabIndex++;
+      } else {
+        // Non-tab children go inside as-is (shouldn't happen but be safe)
+        lines.push(this.generateElement(child));
+      }
+    }
+
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+
+    // Handle tint from container args
+    const tintArg = args.find(a => a.type === 'named' && a.key === 'tint');
+    if (tintArg) {
+      lines.push(`${this.pad()}.tint(${this.argValueToSwift(tintArg.value)})`);
+    }
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  // Generate a single Tab("label", systemImage: "icon") { content }
+  // tabIndex >= 0 means we need value: param for selection binding
+  generateTabItem(node, tabIndex = -1) {
+    const { args, modifiers, children } = node;
+    const label = escapeSwift(this.getFirstStringArg(args));
+    const sysArg = args.find(a => a.type === 'named' && a.key === 'sys');
+    const icon = sysArg ? escapeSwift(sysArg.value.value) : 'questionmark';
+
+    const valueParam = tabIndex >= 0 ? `, value: ${tabIndex}` : '';
+    const lines = [];
+
+    if (children.length > 0) {
+      lines.push(`${this.pad()}Tab("${label}", systemImage: "${icon}"${valueParam}) {`);
+      this.indent++;
+      lines.push(this.generateElements(children));
+      this.indent--;
+      lines.push(`${this.pad()}}`);
+    } else {
+      lines.push(`${this.pad()}Tab("${label}", systemImage: "${icon}"${valueParam}) {`);
+      this.indent++;
+      lines.push(`${this.pad()}Text("")`);
+      this.indent--;
+      lines.push(`${this.pad()}}`);
+    }
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+
+    return lines.join('\n');
+  }
+
   generateContainer(node) {
     const { tag, args, modifiers, children } = node;
     const swiftTag = TAG_MAP[tag] || tag;
@@ -337,6 +483,10 @@ ${body}
       const placeholder = escapeSwift(this.getFirstStringArg(args));
       lines.push(`${this.pad()}SecureField("${placeholder}", text: .constant(""))`);
       lines.push(`${this.pad()}.textFieldStyle(.roundedBorder)`);
+    } else if (tag === 'LG') {
+      lines.push(`${this.pad()}${this.generateLinearGradient(args)}`);
+    } else if (tag === 'Seg') {
+      lines.push(this.generateSegmentedPicker(args));
     } else {
       const swiftTag = TAG_MAP[tag] || tag;
       if (args.length > 0) {
@@ -428,13 +578,24 @@ ${body}
     }
 
     // ── Frame ─────────────────────────────────────────────────────
+    // SwiftUI has two frame overloads that can't be mixed:
+    //   frame(width:, height:, alignment:)
+    //   frame(minWidth:, maxWidth:, minHeight:, maxHeight:, alignment:)
+    // If any min/max param is present, promote w→maxWidth, h→maxHeight
     if (name === 'frame') {
+      const keys = args.filter(a => a.type === 'named').map(a => a.key);
+      const hasMinMax = keys.some(k => ['minW', 'maxW', 'minH', 'maxH'].includes(k));
+
       const parts = [];
       for (const a of args) {
         if (a.type === 'named') {
-          const key = this.frameKeyMap(a.key);
+          let key = a.key;
+          // Promote w/h to maxWidth/maxHeight when mixing with min/max params
+          if (hasMinMax && key === 'w') key = 'maxW';
+          if (hasMinMax && key === 'h') key = 'maxH';
+          const swiftKey = this.frameKeyMap(key);
           const val = this.argValueToSwift(a.value);
-          parts.push(`${key}: ${val}`);
+          parts.push(`${swiftKey}: ${val}`);
         }
       }
       return `.frame(${parts.join(', ')})`;
@@ -484,8 +645,16 @@ ${body}
       const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.gray';
       const wArg = args.find(a => a.type === 'named' && a.key === 'w');
       const rArg = args.find(a => a.type === 'named' && a.key === 'r');
-      const radius = rArg ? this.argValueToSwift(rArg.value) : '8';
       const lineWidth = wArg ? `, lineWidth: ${this.argValueToSwift(wArg.value)}` : '';
+      // .border(.white, r:capsule) → Capsule stroke
+      const rVal = rArg ? this.argValueToSwift(rArg.value) : null;
+      if (rVal === 'Capsule' || rVal === '.capsule') {
+        return `.overlay(Capsule().stroke(${color}${lineWidth}))`;
+      }
+      if (rVal === 'Circle' || rVal === '.circle') {
+        return `.overlay(Circle().stroke(${color}${lineWidth}))`;
+      }
+      const radius = rVal || '8';
       return `.overlay(RoundedRectangle(cornerRadius: ${radius}).stroke(${color}${lineWidth}))`;
     }
 
@@ -511,6 +680,33 @@ ${body}
         return `.clipShape(${shape}())`;
       }
       return `.clipShape(${shape})`;
+    }
+
+    // ── Line limit ─────────────────────────────────────────────────
+    if (name === 'lineLimit' && args.length > 0) {
+      return `.lineLimit(${this.argValueToSwift(args[0])})`;
+    }
+
+    // ── Line spacing ─────────────────────────────────────────────────
+    if (name === 'lineSpacing' && args.length > 0) {
+      return `.lineSpacing(${this.argValueToSwift(args[0])})`;
+    }
+
+    // ── Shadow ───────────────────────────────────────────────────────
+    // .shadow() → .shadow(radius: 4)
+    // .shadow(r:4) → .shadow(radius: 4)
+    // .shadow(.black, r:8, x:0, y:4) → .shadow(color: .black, radius: 8, x: 0, y: 4)
+    if (name === 'shadow') {
+      const parts = [];
+      const colorArg = args.find(a => a.type !== 'named');
+      const rArg = args.find(a => a.type === 'named' && a.key === 'r');
+      const xArg = args.find(a => a.type === 'named' && a.key === 'x');
+      const yArg = args.find(a => a.type === 'named' && a.key === 'y');
+      if (colorArg) parts.push(`color: ${this.argValueToSwift(colorArg)}`);
+      parts.push(`radius: ${rArg ? this.argValueToSwift(rArg.value) : '4'}`);
+      if (xArg) parts.push(`x: ${this.argValueToSwift(xArg.value)}`);
+      if (yArg) parts.push(`y: ${this.argValueToSwift(yArg.value)}`);
+      return `.shadow(${parts.join(', ')})`;
     }
 
     // ── Unknown modifier — error ──────────────────────────────────
@@ -573,6 +769,8 @@ ${body}
     if (!val) return '';
     if (val.type === 'string') return `"${escapeSwift(val.value)}"`;
     if (val.type === 'number') return String(val.value);
+    if (val.type === 'hex') return `Color(hex: 0x${val.value})`;
+    if (val.type === 'gradient') return this.generateLinearGradient(val.args);
     if (val.type === 'enum') {
       if (val.value === '.inf') return '.infinity';
       return val.value;
@@ -580,6 +778,117 @@ ${body}
     if (val.type === 'ident') return val.value;
     if (val.type === 'expr') return val.value;
     return String(val.value || '');
+  }
+
+  // Generate LinearGradient from LG(...) args
+  // LG(.purple, .black)  → defaults to top→bottom
+  // LG(.purple, .black, dir:.down) → top→bottom
+  // LG(.purple, .black, dir:.right) → leading→trailing
+  // LG(#6B2FA0, #1A0A2E, dir:.down) → with hex colors
+  generateLinearGradient(args) {
+    const dirMap = {
+      '.down':  { start: '.top', end: '.bottom' },
+      '.up':    { start: '.bottom', end: '.top' },
+      '.right': { start: '.leading', end: '.trailing' },
+      '.left':  { start: '.trailing', end: '.leading' },
+    };
+
+    // Separate colors from named args
+    const colors = [];
+    let dir = '.down';
+    for (const a of args) {
+      if (a.type === 'named' && a.key === 'dir') {
+        dir = a.value.value || a.value;
+      } else {
+        colors.push(this.argValueToSwift(a));
+      }
+    }
+
+    const d = dirMap[dir] || dirMap['.down'];
+    return `LinearGradient(colors: [${colors.join(', ')}], startPoint: ${d.start}, endPoint: ${d.end})`;
+  }
+
+  // Seg(["Pickup", "Delivery"], active:0)
+  // → Picker("", selection: .constant(0)) { Text("Pickup").tag(0) ... }.pickerStyle(.segmented)
+  // TF.float("Email") → FloatingTextField(label: "Email", value: "")
+  // TF.float("Email", "john@example.com") → FloatingTextField(label: "Email", value: "john@example.com")
+  // Img.placeholder(h:200, color:.orange, icon:"fork.knife")
+  // TF.search("Search...") → SearchBar(placeholder: "Search...")
+  // TF.search("Search...", "quesarito") → SearchBar(placeholder: "Search...", value: "quesarito")
+  generateSearchBar(node) {
+    const { args, modifiers } = node;
+    const strings = args.filter(a => a.type === 'string').map(a => a.value);
+    const placeholder = escapeSwift(strings[0] || 'Search...');
+    const value = strings[1] ? escapeSwift(strings[1]) : '';
+
+    const lines = [];
+    if (value) {
+      lines.push(`${this.pad()}SearchBar(placeholder: "${placeholder}", value: "${value}")`);
+    } else {
+      lines.push(`${this.pad()}SearchBar(placeholder: "${placeholder}")`);
+    }
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  generateImagePlaceholder(node) {
+    const { args, modifiers } = node;
+    const parts = [];
+    const hArg = args.find(a => a.type === 'named' && a.key === 'h');
+    const colorArg = args.find(a => a.type === 'named' && a.key === 'color');
+    const iconArg = args.find(a => a.type === 'named' && a.key === 'icon');
+    if (hArg) parts.push(`height: ${this.argValueToSwift(hArg.value)}`);
+    if (colorArg) parts.push(`color: ${this.argValueToSwift(colorArg.value)}`);
+    if (iconArg) parts.push(`icon: ${this.argValueToSwift(iconArg.value)}`);
+
+    const lines = [];
+    lines.push(`${this.pad()}ImagePlaceholder(${parts.join(', ')})`);
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  generateFloatingField(node, def) {
+    const { args, modifiers } = node;
+    const strings = args.filter(a => a.type === 'string').map(a => a.value);
+    const label = escapeSwift(strings[0] || '');
+    const value = escapeSwift(strings[1] || '');
+
+    const lines = [];
+    lines.push(`${this.pad()}${def.swift}(label: "${label}", value: "${value}")`);
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  generateSegmentedPicker(args) {
+    // First arg should be an array of strings, or individual string args
+    // Named arg active:N sets the selected index
+    const items = [];
+    let active = 0;
+
+    for (const a of args) {
+      if (a.type === 'named' && a.key === 'active') {
+        active = a.value.value || 0;
+      } else if (a.type === 'string') {
+        items.push(escapeSwift(a.value));
+      }
+    }
+
+    const lines = [];
+    lines.push(`${this.pad()}Picker("", selection: .constant(${active})) {`);
+    this.indent++;
+    for (let i = 0; i < items.length; i++) {
+      lines.push(`${this.pad()}Text("${items[i]}").tag(${i})`);
+    }
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+    lines.push(`${this.pad()}.pickerStyle(.segmented)`);
+    return lines.join('\n');
   }
 
   getFirstStringArg(args) {

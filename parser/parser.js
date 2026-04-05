@@ -205,6 +205,12 @@ class Parser {
       return { type: 'number', value: tok.value };
     }
 
+    // Hex color: #FF6600
+    if (tok.type === TokenType.HEX_COLOR) {
+      this.advance();
+      return { type: 'hex', value: tok.value };
+    }
+
     // Enum or chained expression starting with dot: .blue, .white.opacity(0.8)
     if (tok.type === TokenType.DOT && this.peek(1).type === TokenType.IDENT) {
       this.advance(); // skip dot
@@ -220,6 +226,13 @@ class Parser {
       // Simple enum
       if (`.${ident}` === '.inf') return { type: 'enum', value: '.infinity' };
       return { type: 'enum', value: `.${ident}` };
+    }
+
+    // LG(...) as an inline value — e.g. .fg(LG(.purple, .black, dir:.down))
+    if (tok.type === TokenType.IDENT && tok.value === 'LG' && this.peek(1).type === TokenType.LPAREN) {
+      this.advance(); // skip LG
+      const lgArgs = this.parseArgs();
+      return { type: 'gradient', args: lgArgs };
     }
 
     // Plain identifier — could be followed by chained calls: Capsule(), Circle()

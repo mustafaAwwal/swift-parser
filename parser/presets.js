@@ -22,9 +22,18 @@ const presets = {
     cardBody:  { type: 'containerModifier', swift: 'cardBody' },
     badge:     { type: 'leafModifier', swift: 'badge', viewTag: 'Text' },
   },
+  Img: {
+    placeholder: { type: 'imagePlaceholder' },
+  },
   TF: {
-    _default: { type: 'textField', view: 'TextField' },
-    secure:   { type: 'textField', view: 'SecureField' },
+    _default:    { type: 'textField', view: 'TextField' },
+    secure:      { type: 'textField', view: 'SecureField' },
+    search:      { type: 'searchBar' },
+    float:       { type: 'floatingField', swift: 'FloatingTextField' },
+    floatSecure: { type: 'floatingField', swift: 'FloatingSecureField' },
+  },
+  Tab: {
+    item: { type: 'tabItem' },
   },
 };
 
