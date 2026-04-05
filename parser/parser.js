@@ -60,7 +60,7 @@ class Parser {
   }
 
   // Parse a single element:
-  //   IDENT (.IDENT)? (args)? modifiers* ({children})? (*NUMBER)?
+  //   IDENT (.IDENT)? (args)? modifiers* ({children})? modifiers* (*NUMBER)?
   parseElement() {
     // Check for array literal: ["a","b"].map(V.badge)
     if (this.current().type === TokenType.LBRACKET) {
@@ -74,8 +74,6 @@ class Parser {
     if (
       this.current().type === TokenType.DOT &&
       this.peek(1).type === TokenType.IDENT &&
-      // Distinguish preset from modifier: preset comes before args/children
-      // A preset is the first dot after the tag name
       this.isPresetContext(tag)
     ) {
       this.advance(); // skip dot
@@ -88,22 +86,8 @@ class Parser {
       args = this.parseArgs();
     }
 
-    // Optional modifiers: .ident or .ident(...)
-    const modifiers = [];
-    while (this.current().type === TokenType.DOT) {
-      // Peek ahead: DOT IDENT — could be a modifier
-      if (this.peek(1).type === TokenType.IDENT) {
-        this.advance(); // skip dot
-        const modName = this.advance().value;
-        let modArgs = [];
-        if (this.current().type === TokenType.LPAREN) {
-          modArgs = this.parseArgs();
-        }
-        modifiers.push({ name: modName, args: modArgs });
-      } else {
-        break;
-      }
-    }
+    // Optional modifiers: .ident, .ident(...), or .ident { ... }
+    const modifiers = this.parseModifiers();
 
     // Optional children: { ... }
     let children = [];
@@ -114,19 +98,7 @@ class Parser {
     }
 
     // Modifiers AFTER children: HS { ... }.p(20).bg(.red)
-    while (this.current().type === TokenType.DOT) {
-      if (this.peek(1).type === TokenType.IDENT) {
-        this.advance(); // skip dot
-        const modName = this.advance().value;
-        let modArgs = [];
-        if (this.current().type === TokenType.LPAREN) {
-          modArgs = this.parseArgs();
-        }
-        modifiers.push({ name: modName, args: modArgs });
-      } else {
-        break;
-      }
-    }
+    this.parseModifiers(modifiers);
 
     // Optional repetition: * NUMBER
     let repeat = 1;
@@ -144,6 +116,37 @@ class Parser {
       children,
       repeat,
     };
+  }
+
+  // Parse a chain of modifiers, appending to existing array or creating new one
+  parseModifiers(existing) {
+    const modifiers = existing || [];
+    while (this.current().type === TokenType.DOT) {
+      if (this.peek(1).type === TokenType.IDENT) {
+        this.advance(); // skip dot
+        const modName = this.advance().value;
+
+        // Modifier with brace block: .overlay { DSL content }
+        if (this.current().type === TokenType.LBRACE) {
+          this.advance(); // skip {
+          const blockChildren = this.parseElements();
+          this.expect(TokenType.RBRACE);
+          modifiers.push({ name: modName, args: [], block: blockChildren });
+        }
+        // Modifier with args: .fg(.blue)
+        else if (this.current().type === TokenType.LPAREN) {
+          const modArgs = this.parseArgs();
+          modifiers.push({ name: modName, args: modArgs });
+        }
+        // No-arg modifier: .bold
+        else {
+          modifiers.push({ name: modName, args: [] });
+        }
+      } else {
+        break;
+      }
+    }
+    return modifiers;
   }
 
   // Check if the current tag supports presets
@@ -173,6 +176,7 @@ class Parser {
   //   42              → { type: 'number', value: 42 }
   //   key: value      → { type: 'named', key: "...", value: ... }
   //   .ident          → { type: 'enum', value: ".ident" }
+  //   .ident.method(x) → { type: 'expr', value: ".ident.method(x)" }  (chained)
   parseArg() {
     // Named argument: IDENT COLON value
     if (
@@ -201,90 +205,87 @@ class Parser {
       return { type: 'number', value: tok.value };
     }
 
-    // Enum value: .ident — may be followed by chained calls like .white.opacity(0.8)
+    // Enum or chained expression starting with dot: .blue, .white.opacity(0.8)
     if (tok.type === TokenType.DOT && this.peek(1).type === TokenType.IDENT) {
-      const raw = this.parseRawExpression();
-      // Check if it's a simple enum or a complex expression
-      if (raw.match(/^\.[a-zA-Z_]+$/) ) {
-        if (raw === '.inf') return { type: 'enum', value: '.infinity' };
-        return { type: 'enum', value: raw };
+      this.advance(); // skip dot
+      const ident = this.advance().value;
+
+      // Check for chained calls: .white.opacity(0.8) or .gray.opacity(0.3)
+      if (this.current().type === TokenType.DOT || this.current().type === TokenType.LPAREN) {
+        let expr = `.${ident}`;
+        expr += this.parseChainedCalls();
+        return { type: 'expr', value: expr };
       }
-      return { type: 'raw', value: raw };
+
+      // Simple enum
+      if (`.${ident}` === '.inf') return { type: 'enum', value: '.infinity' };
+      return { type: 'enum', value: `.${ident}` };
     }
 
-    // Identifier possibly followed by ( ) — e.g. RoundedRectangle(cornerRadius:12)
+    // Plain identifier — could be followed by chained calls: Capsule(), Circle()
     if (tok.type === TokenType.IDENT) {
-      // Check if this is a complex expression (ident followed by parens or dots)
-      if (this.peek(1).type === TokenType.LPAREN || this.peek(1).type === TokenType.DOT) {
-        // Could be a complex expression like RoundedRectangle(cornerRadius:40).stroke(...)
-        const raw = this.parseRawExpression();
-        return { type: 'raw', value: raw };
-      }
       this.advance();
+
+      // Identifier with parens or dots: Capsule(), RoundedRectangle(cornerRadius:8)
+      if (this.current().type === TokenType.LPAREN || this.current().type === TokenType.DOT) {
+        let expr = tok.value;
+        expr += this.parseChainedCalls();
+        return { type: 'expr', value: expr };
+      }
+
       return { type: 'ident', value: tok.value };
     }
 
     this.error('Expected argument value');
   }
 
-  // Parse a raw expression — collects tokens as a string, handling balanced parens and dot chains.
-  // Stops at COMMA or unbalanced RPAREN (the enclosing arg list boundary).
-  parseRawExpression() {
-    let raw = '';
-    let depth = 0;
+  // Parse chained method calls and property accesses: .opacity(0.8).something
+  // Returns the string representation of the chain
+  parseChainedCalls() {
+    let chain = '';
 
-    while (this.current().type !== TokenType.EOF) {
-      const t = this.current();
-
-      // Stop at comma or closing paren at depth 0 (end of this argument)
-      if (depth === 0 && (t.type === TokenType.COMMA || t.type === TokenType.RPAREN)) {
-        break;
+    while (true) {
+      // (args) — function call
+      if (this.current().type === TokenType.LPAREN) {
+        chain += '(';
+        this.advance(); // skip (
+        const innerArgs = [];
+        while (this.current().type !== TokenType.RPAREN) {
+          if (innerArgs.length > 0) {
+            this.expect(TokenType.COMMA);
+            chain += ', ';
+          }
+          // Parse inner arg and serialize
+          const arg = this.parseArg();
+          chain += this.serializeArg(arg);
+          innerArgs.push(arg);
+        }
+        this.expect(TokenType.RPAREN);
+        chain += ')';
       }
-      // Stop at opening brace at depth 0 (start of children block)
-      if (depth === 0 && t.type === TokenType.LBRACE) {
-        break;
+      // .name — property access or method call
+      else if (this.current().type === TokenType.DOT && this.peek(1).type === TokenType.IDENT) {
+        this.advance(); // skip dot
+        const name = this.advance().value;
+        chain += `.${name}`;
       }
-
-      if (t.type === TokenType.LPAREN) {
-        raw += '(';
-        depth++;
-        this.advance();
-      } else if (t.type === TokenType.RPAREN) {
-        if (depth === 0) break;
-        raw += ')';
-        depth--;
-        this.advance();
-      } else if (t.type === TokenType.DOT) {
-        raw += '.';
-        this.advance();
-      } else if (t.type === TokenType.COLON) {
-        raw += ': ';
-        this.advance();
-      } else if (t.type === TokenType.COMMA) {
-        if (depth === 0) break;
-        raw += ', ';
-        this.advance();
-      } else if (t.type === TokenType.STRING) {
-        raw += `"${t.value}"`;
-        this.advance();
-      } else if (t.type === TokenType.NUMBER) {
-        raw += String(t.value);
-        this.advance();
-      } else if (t.type === TokenType.IDENT) {
-        raw += t.value;
-        this.advance();
-      } else if (t.type === TokenType.STAR) {
-        // Stop — this is repetition operator at top level
-        if (depth === 0) break;
-        raw += '*';
-        this.advance();
-      } else {
-        // Unknown token — stop
+      else {
         break;
       }
     }
 
-    return raw;
+    return chain;
+  }
+
+  // Serialize a parsed arg back to Swift string (for chained expressions)
+  serializeArg(arg) {
+    if (arg.type === 'string') return `"${arg.value}"`;
+    if (arg.type === 'number') return String(arg.value);
+    if (arg.type === 'enum') return arg.value;
+    if (arg.type === 'ident') return arg.value;
+    if (arg.type === 'expr') return arg.value;
+    if (arg.type === 'named') return `${arg.key}: ${this.serializeArg(arg.value)}`;
+    return String(arg.value || '');
   }
 
   // Parse: ["a","b","c"].map(V.badge)

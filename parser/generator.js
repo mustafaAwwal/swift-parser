@@ -46,6 +46,20 @@ const INIT_PARAMS = new Set(['sp', 'al']);
 // Container props that become SwiftUI modifiers on the container
 const CONTAINER_MODIFIERS = new Set(['p', 'px', 'py', 'r']);
 
+// All known modifier names — anything not here is an error
+const KNOWN_MODIFIERS = new Set([
+  // Shorthands with args
+  'fg', 'bg', 'f', 'font', 'frame', 'p', 'px', 'py', 'pt', 'pb', 'pl', 'pr',
+  'r', 'opacity', 'multiline', 'multilineTextAlignment', 'offset', 'border', 'stroke', 'clipShape',
+  'tracking',
+  // Block modifiers
+  'overlay',
+  // No-arg (handled by FONT_STYLES, FONT_WEIGHTS, FOREGROUND_STYLES, or below)
+  'underline', 'italic', 'ignoresSafeArea',
+  // Also accept these font/weight/foreground sets
+  ...FONT_STYLES, ...FONT_WEIGHTS, ...FOREGROUND_STYLES,
+]);
+
 // Escape a string for use inside Swift double-quoted string literals
 function escapeSwift(str) {
   return str
@@ -110,7 +124,7 @@ ${body}
     if (tag === 'Spacer') return `${this.pad()}Spacer()`;
     if (tag === 'Div') return `${this.pad()}Divider()`;
 
-    // Shapes and simple views with no required args
+    // Shapes with no required args
     if ((tag === 'Rect' || tag === 'Circle' || tag === 'Capsule') && args.length === 0 && children.length === 0) {
       const swiftTag = TAG_MAP[tag] || tag;
       const lines = [`${this.pad()}${swiftTag}()`];
@@ -165,7 +179,6 @@ ${body}
     }
   }
 
-  // struct preset: emit helper struct call — CTAButton(label: "Sign In")
   generateStructPreset(node, def) {
     const { modifiers } = node;
     const label = escapeSwift(this.getFirstStringArg(node.args));
@@ -177,31 +190,25 @@ ${body}
     return lines.join('\n');
   }
 
-  // modifier preset: emit base view + .modifier() — Button("X", action: {}).btnText()
   generateModifierPreset(node, def) {
     const { tag, modifiers } = node;
     const lines = [];
 
-    // Emit the base view (e.g. Button)
     if (tag === 'B') {
       const label = escapeSwift(this.getFirstStringArg(node.args));
       lines.push(`${this.pad()}Button("${label}", action: {})`);
     } else {
-      // Fallback: generate as a regular leaf then append
       return this.generateLeaf(node);
     }
 
-    // Append the preset modifier
     lines.push(`${this.pad()}.${def.swift}()`);
 
-    // Append user modifiers
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
     return lines.join('\n');
   }
 
-  // containerModifier preset: emit VStack { children }.card()
   generateContainerModifierPreset(node, def) {
     const { modifiers, children } = node;
     const lines = [];
@@ -212,40 +219,33 @@ ${body}
     this.indent--;
     lines.push(`${this.pad()}}`);
 
-    // Append the preset modifier
     lines.push(`${this.pad()}.${def.swift}()`);
 
-    // Append user modifiers
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
     return lines.join('\n');
   }
 
-  // leafModifier preset: emit a different view + .modifier() — Text("X").badge()
   generateLeafModifierPreset(node, def) {
     const { modifiers } = node;
     const label = escapeSwift(this.getFirstStringArg(node.args));
     const lines = [];
 
-    // Emit the view specified by the preset
     if (def.viewTag === 'Text') {
       lines.push(`${this.pad()}Text("${label}")`);
     } else {
       lines.push(`${this.pad()}${def.viewTag}("${label}")`);
     }
 
-    // Append the preset modifier
     lines.push(`${this.pad()}.${def.swift}()`);
 
-    // Append user modifiers
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
     return lines.join('\n');
   }
 
-  // TextField/SecureField preset
   generateTextField(node, def) {
     const { modifiers } = node;
     const placeholder = escapeSwift(this.getFirstStringArg(node.args));
@@ -338,7 +338,6 @@ ${body}
       lines.push(`${this.pad()}SecureField("${placeholder}", text: .constant(""))`);
       lines.push(`${this.pad()}.textFieldStyle(.roundedBorder)`);
     } else {
-      // Fallback: use tag map
       const swiftTag = TAG_MAP[tag] || tag;
       if (args.length > 0) {
         const argStr = args.map(a => this.argToSwift(a)).join(', ');
@@ -375,40 +374,60 @@ ${body}
     return lines.join('\n');
   }
 
-  // Expand a modifier to SwiftUI
-  expandModifier(mod) {
-    const { name, args } = mod;
+  // ── Modifier expansion ──────────────────────────────────────────────
 
-    // Font styles
+  expandModifier(mod) {
+    const { name, args, block } = mod;
+
+    // ── Block modifiers (.overlay { DSL }) ─────────────────────────
+    if (block && block.length > 0) {
+      if (name === 'overlay') {
+        return this.expandOverlayBlock(block);
+      }
+      // Future: .background { }, etc.
+      throw new Error(`Unknown block modifier: .${name} { }`);
+    }
+
+    // ── Font styles ───────────────────────────────────────────────
     if (FONT_STYLES.has(name)) {
       return `.font(.${name})`;
     }
 
-    // Font weights
+    // ── Font weights ──────────────────────────────────────────────
     if (FONT_WEIGHTS.has(name)) {
       return `.fontWeight(.${name})`;
     }
 
-    // Foreground styles
+    // ── Foreground styles ─────────────────────────────────────────
     if (FOREGROUND_STYLES.has(name)) {
       return `.foregroundStyle(.${name})`;
     }
 
-    // Explicit modifiers with args
+    // ── No-arg modifiers ──────────────────────────────────────────
+    if (name === 'underline') return `.underline()`;
+    if (name === 'italic') return `.italic()`;
+    if (name === 'ignoresSafeArea') return `.ignoresSafeArea()`;
+
+    // ── Color: fg, bg ─────────────────────────────────────────────
     if (name === 'fg' && args.length > 0) {
       return `.foregroundStyle(${this.argValueToSwift(args[0])})`;
     }
     if (name === 'bg' && args.length > 0) {
       return `.background(${this.argValueToSwift(args[0])})`;
     }
+
+    // ── Typography ────────────────────────────────────────────────
     if (name === 'f' && args.length > 0) {
       return `.font(.system(size: ${this.argValueToSwift(args[0])}))`;
     }
     if (name === 'font' && args.length > 0) {
       return `.font(${this.argValueToSwift(args[0])})`;
     }
+    if (name === 'tracking' && args.length > 0) {
+      return `.tracking(${this.argValueToSwift(args[0])})`;
+    }
 
-    // Frame
+    // ── Frame ─────────────────────────────────────────────────────
     if (name === 'frame') {
       const parts = [];
       for (const a of args) {
@@ -421,52 +440,102 @@ ${body}
       return `.frame(${parts.join(', ')})`;
     }
 
-    // Padding shorthand as modifier
-    if (name === 'p' && args.length > 0) {
-      return `.padding(${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'px' && args.length > 0) {
-      return `.padding(.horizontal, ${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'py' && args.length > 0) {
-      return `.padding(.vertical, ${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'pt' && args.length > 0) {
-      return `.padding(.top, ${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'pb' && args.length > 0) {
-      return `.padding(.bottom, ${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'pl' && args.length > 0) {
-      return `.padding(.leading, ${this.argValueToSwift(args[0])})`;
-    }
-    if (name === 'pr' && args.length > 0) {
-      return `.padding(.trailing, ${this.argValueToSwift(args[0])})`;
-    }
+    // ── Padding ───────────────────────────────────────────────────
+    if (name === 'p' && args.length > 0) return `.padding(${this.argValueToSwift(args[0])})`;
+    if (name === 'px' && args.length > 0) return `.padding(.horizontal, ${this.argValueToSwift(args[0])})`;
+    if (name === 'py' && args.length > 0) return `.padding(.vertical, ${this.argValueToSwift(args[0])})`;
+    if (name === 'pt' && args.length > 0) return `.padding(.top, ${this.argValueToSwift(args[0])})`;
+    if (name === 'pb' && args.length > 0) return `.padding(.bottom, ${this.argValueToSwift(args[0])})`;
+    if (name === 'pl' && args.length > 0) return `.padding(.leading, ${this.argValueToSwift(args[0])})`;
+    if (name === 'pr' && args.length > 0) return `.padding(.trailing, ${this.argValueToSwift(args[0])})`;
 
-    // Corner radius
+    // ── Corner radius ─────────────────────────────────────────────
     if (name === 'r' && args.length > 0) {
       return `.clipShape(RoundedRectangle(cornerRadius: ${this.argValueToSwift(args[0])}))`;
     }
 
-    // Multiline text alignment
-    if (name === 'multiline' && args.length > 0) {
-      return `.multilineTextAlignment(${this.argValueToSwift(args[0])})`;
-    }
-
-    // Opacity
+    // ── Opacity ───────────────────────────────────────────────────
     if (name === 'opacity' && args.length > 0) {
       return `.opacity(${this.argValueToSwift(args[0])})`;
     }
 
-    // Generic — pass through as-is
-    if (args.length > 0) {
-      const argStr = args.map(a => this.argToSwift(a)).join(', ');
-      return `.${name}(${argStr})`;
+    // ── Multiline text alignment ──────────────────────────────────
+    if ((name === 'multiline' || name === 'multilineTextAlignment') && args.length > 0) {
+      return `.multilineTextAlignment(${this.argValueToSwift(args[0])})`;
     }
 
-    // No-arg modifier
-    return `.${name}()`;
+    // ── Offset ────────────────────────────────────────────────────
+    if (name === 'offset') {
+      const parts = [];
+      for (const a of args) {
+        if (a.type === 'named') {
+          parts.push(`${a.key}: ${this.argValueToSwift(a.value)}`);
+        }
+      }
+      return `.offset(${parts.join(', ')})`;
+    }
+
+    // ── Border (new shorthand) ────────────────────────────────────
+    // .border(.gray) → .overlay(RoundedRectangle(cornerRadius: 8).stroke(.gray))
+    // .border(.gray, w:2) → .overlay(RoundedRectangle(cornerRadius: 8).stroke(.gray, lineWidth: 2))
+    // .border(.gray, r:12) → .overlay(RoundedRectangle(cornerRadius: 12).stroke(.gray))
+    // .border(.gray, w:2, r:12) → .overlay(RoundedRectangle(cornerRadius: 12).stroke(.gray, lineWidth: 2))
+    if (name === 'border') {
+      const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.gray';
+      const wArg = args.find(a => a.type === 'named' && a.key === 'w');
+      const rArg = args.find(a => a.type === 'named' && a.key === 'r');
+      const radius = rArg ? this.argValueToSwift(rArg.value) : '8';
+      const lineWidth = wArg ? `, lineWidth: ${this.argValueToSwift(wArg.value)}` : '';
+      return `.overlay(RoundedRectangle(cornerRadius: ${radius}).stroke(${color}${lineWidth}))`;
+    }
+
+    // ── Stroke (for shapes) ───────────────────────────────────────
+    // .stroke(.gray) → .stroke(.gray)
+    // .stroke(.gray, w:2) → .stroke(.gray, lineWidth: 2)
+    if (name === 'stroke') {
+      const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.gray';
+      const wArg = args.find(a => a.type === 'named' && a.key === 'w');
+      if (wArg) {
+        return `.stroke(${color}, lineWidth: ${this.argValueToSwift(wArg.value)})`;
+      }
+      return `.stroke(${color})`;
+    }
+
+    // ── ClipShape ─────────────────────────────────────────────────
+    // .clipShape(Capsule) → .clipShape(Capsule())
+    // .clipShape(Circle) → .clipShape(Circle())
+    if (name === 'clipShape' && args.length > 0) {
+      const shape = this.argValueToSwift(args[0]);
+      // If it's a bare identifier like Capsule or Circle, add ()
+      if (/^[A-Z]\w*$/.test(shape)) {
+        return `.clipShape(${shape}())`;
+      }
+      return `.clipShape(${shape})`;
+    }
+
+    // ── Unknown modifier — error ──────────────────────────────────
+    throw new Error(`Unknown modifier: .${name}(${args.map(a => this.argToSwift(a)).join(', ')}). Add it to the generator.`);
+  }
+
+  // Generate .overlay() with DSL block content
+  expandOverlayBlock(blockChildren) {
+    // Single element overlay: .overlay(Element)
+    // Multiple elements: .overlay { VStack { ... } }
+    if (blockChildren.length === 1) {
+      const saved = this.indent;
+      this.indent = 0;
+      const inner = this.generateElement(blockChildren[0]).trim();
+      this.indent = saved;
+      return `.overlay(${inner})`;
+    }
+
+    // Multiple children — wrap in a container-like overlay
+    const lines = [`.overlay {`];
+    this.indent++;
+    lines.push(this.generateElements(blockChildren));
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+    return lines.join('\n');
   }
 
   expandContainerModifier(arg) {
@@ -488,6 +557,7 @@ ${body}
       maxW: 'maxWidth',
       minH: 'minHeight',
       maxH: 'maxHeight',
+      al: 'alignment',
     };
     return map[key] || key;
   }
@@ -508,7 +578,7 @@ ${body}
       return val.value;
     }
     if (val.type === 'ident') return val.value;
-    if (val.type === 'raw') return val.value;
+    if (val.type === 'expr') return val.value;
     return String(val.value || '');
   }
 

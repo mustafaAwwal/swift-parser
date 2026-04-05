@@ -9,9 +9,9 @@ struct Screen3View: View {
             VStack(alignment: .center, spacing: 24) {
                 Spacer()
                 Image(systemName: "flame.fill")
-                .font(.system(size: 60))
+                .font(.system(size: 64))
                 .foregroundStyle(.white)
-                VStack(spacing: 8) {
+                VStack(alignment: .center, spacing: 8) {
                     Text("KEEP US IN")
                     .font(.system(size: 32))
                     .fontWeight(.bold)
@@ -22,26 +22,25 @@ struct Screen3View: View {
                     .foregroundStyle(.white)
                 }
                 Text("Turn on tracking to receive personalized offers and updates based on your dining preferences.")
-                .foregroundStyle(.white)
+                .foregroundStyle(.white.opacity(0.9))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-                Text("MAKE YOUR CHOICE")
-                .fontWeight(.bold)
-                .foregroundStyle(.purple)
                 .font(.system(size: 16))
-                .padding(16)
-                .padding(.horizontal, 24)
-                .background(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                Text("MAKE YOUR CHOICE")
+                .font(.system(size: 14))
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
+                .background(.black.opacity(0.3))
+                .clipShape(RoundedRectangle(cornerRadius: 28))
                 Spacer()
                 Text("Taco Bell would like your permission to share your data in order to show you ads tailored to you as described in our Notice of Financial Incentive, Privacy Statement and US Privacy Notice. You do not have to opt in to use this app.")
-                .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.8))
+                .font(.system(size: 11))
+                .foregroundStyle(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(16)
             }
-            .padding(16)
+            .padding(.horizontal, 32)
         }
     }
 }

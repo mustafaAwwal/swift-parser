@@ -32,23 +32,36 @@ sp:12 → spacing, al:.leading → alignment, p:24 → padding, px:16 → horizo
 
 ## Modifiers (dot-chained)
 .bold .semibold .title .headline .caption .body — font styles/weights
-.fg(.blue) .bg(.red) — colors
+.fg(.blue) .bg(.red) — colors (supports chaining: .fg(.white.opacity(0.8)))
 .f(24) — font size
 .frame(w:100,h:50) .frame(maxW:.inf) — sizing
-.p(16) .px(8) .py(8) .pt(8) .pb(8) .pl(8) .pr(8) — padding as modifier
+.p(16) .px(8) .py(8) .pt(8) .pb(8) .pl(8) .pr(8) — padding
 .opacity(0.3) .r(12) — opacity, corner radius
 .secondary .tertiary — foreground style shortcuts
+.underline .italic — text decoration
+.offset(x:10, y:-5) — position offset
+.tracking(2) — letter spacing
+.ignoresSafeArea — extend to screen edges
 
 ## Shapes
 Rect → Rectangle(), Circle → Circle(), Capsule → Capsule()
-Use with modifiers: Rect.fg(.purple).ignoresSafeArea()
+Use with modifiers: Rect.fg(.purple).ignoresSafeArea
+Shape borders: Rect.stroke(.gray) or Rect.stroke(.gray, w:2)
+Clip to shape: T("hi").clipShape(Capsule) or .clipShape(Circle)
 
-## Passthrough Expressions
-Any SwiftUI expression works in modifier args:
-.fg(.white.opacity(0.8)) — chained calls
-.overlay(RoundedRectangle(cornerRadius:12).stroke(.gray)) — complex expressions
-.clipShape(Circle()) — shape args
+## Borders (container outline)
+.border(.gray) — 8pt corner radius, 1pt gray border
+.border(.gray, r:12) — custom corner radius
+.border(.gray, w:2, r:12) — custom width and radius
+
+## Overlay (layer DSL on top of element)
+Use braces with DSL content inside:
+Circle.fg(.blue).overlay { Img(sys:"plus").f(14).fg(.white) }
 Modifiers after containers work: HS { ... }.bg(.red).p(16)
+
+## IMPORTANT: Only use DSL syntax
+Do NOT write raw SwiftUI code in modifiers. Every modifier must be a known DSL modifier.
+If you need something not listed here, call get_dsl_reference for the full modifier list.
 
 ## Nesting
 All nesting uses { }. Indentation is cosmetic only.
@@ -66,7 +79,7 @@ Img(sys:"star.fill")*5 — repeat element
 - One screen per file
 - Literal point values (p:24 = 24pt)
 - Use SwiftUI color/font names directly
-- Any unrecognized modifier passes through as-is to SwiftUI
+- Only use known DSL modifiers — unknown modifiers will cause errors
 - This is STATIC UI only — no state, no bindings, no logic
 
 Use get_dsl_reference for detailed docs on specific topics.`,
@@ -131,34 +144,70 @@ const getDslReference = tool(
 
       modifiers: `# DSL Modifiers — Full Reference
 
-## Font Styles (no args, map to .font(.X))
+IMPORTANT: Only use modifiers listed here. Unknown modifiers will cause errors.
+
+## Font Styles (no args)
 .largeTitle .title .title2 .title3 .headline .subheadline .body .callout .caption .caption2 .footnote
 
-## Font Weights (no args, map to .fontWeight(.X))
+## Font Weights (no args)
 .bold .semibold .medium .light .heavy .thin .black .regular
 
-## Foreground Styles (no args, map to .foregroundStyle(.X))
+## Foreground Styles (no args)
 .secondary .tertiary .quaternary
 
-## With Arguments
+## Text Decoration (no args)
+.underline .italic
+
+## Layout (no args)
+.ignoresSafeArea
+
+## Color
 | Modifier | SwiftUI | Example |
 |----------|---------|---------|
 | .fg(.color) | .foregroundStyle(.color) | .fg(.blue) |
 | .bg(.color) | .background(.color) | .bg(.red) |
+Colors support chaining: .fg(.white.opacity(0.8)), .bg(.gray.opacity(0.3))
+
+## Typography
 | .f(size) | .font(.system(size:)) | .f(24) |
 | .font(.style) | .font(.style) | .font(.largeTitle) |
+| .tracking(val) | .tracking(val) | .tracking(2) |
+
+## Sizing
 | .frame(w:,h:) | .frame(width:,height:) | .frame(w:100,h:50) |
 | .frame(maxW:.inf) | .frame(maxWidth:.infinity) | full width |
-| .opacity(val) | .opacity(val) | .opacity(0.3) |
-| .multiline(.center) | .multilineTextAlignment(.center) | |
-| .p(val) | .padding(val) | .p(16) |
-| .px(val) | .padding(.horizontal,val) | .px(8) |
-| .py(val) | .padding(.vertical,val) | .py(8) |
-| .r(val) | .clipShape(RoundedRectangle(cornerRadius:val)) | .r(12) |
+| .frame(al:.leading) | .frame(alignment:.leading) | alignment in frame |
 
-## Passthrough
-Any unrecognized modifier passes through as-is: .someModifier(args) → .someModifier(args)
-This means you can use ANY SwiftUI modifier directly.`,
+## Padding
+| .p(val) | all sides | .p(16) |
+| .px(val) | horizontal | .px(8) |
+| .py(val) | vertical | .py(8) |
+| .pt(val) | top | .pt(8) |
+| .pb(val) | bottom | .pb(8) |
+| .pl(val) | leading | .pl(8) |
+| .pr(val) | trailing | .pr(8) |
+
+## Shape & Clipping
+| .r(val) | rounded corners | .r(12) |
+| .clipShape(Capsule) | clip to capsule | .clipShape(Capsule) |
+| .clipShape(Circle) | clip to circle | .clipShape(Circle) |
+
+## Borders
+| .border(.color) | outlined container (8pt radius) | .border(.gray) |
+| .border(.color, r:12) | custom radius | .border(.blue, r:12) |
+| .border(.color, w:2, r:12) | custom width + radius | .border(.gray, w:2, r:12) |
+| .stroke(.color) | shape border (use on Rect/Circle) | .stroke(.gray) |
+| .stroke(.color, w:2) | shape border with width | .stroke(.purple, w:2) |
+
+## Overlay (layer DSL content on top)
+Use braces — DSL inside gets parsed:
+  Circle.fg(.blue).overlay { Img(sys:"plus").f(14).fg(.white) }
+  Rect.frame(w:40,h:40).overlay { T("!").bold.fg(.white) }
+
+## Other
+| .opacity(val) | transparency | .opacity(0.3) |
+| .offset(x:,y:) | position offset | .offset(x:10, y:-5) |
+| .multiline(.center) | text alignment | .multiline(.center) |`,
 
       presets: `# DSL Presets — Full Reference
 

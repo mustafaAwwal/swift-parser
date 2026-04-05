@@ -10,15 +10,15 @@ struct Screen0View: View {
                 Spacer()
                 HStack(spacing: 12) {
                     Image(systemName: "bell.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 28))
                     Text("Welcome")
-                    .font(.system(size: 36))
+                    .font(.system(size: 32))
                     .fontWeight(.bold)
-                    .foregroundStyle(.white)
                 }
-                .padding(20)
-                .overlay(RoundedRectangle(cornerRadius: 40).stroke(.white, lineWidth: 2))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
+                .overlay(RoundedRectangle(cornerRadius: 40).stroke(.white))
                 Spacer()
             }
         }

@@ -9,19 +9,11 @@ struct Screen2View: View {
             VStack(alignment: .center, spacing: 24) {
                 Spacer()
                 ZStack {
-                    Image(systemName: "iphone")
-                    .font(.system(size: 50))
+                    Image(systemName: "iphone.badge.play")
+                    .font(.system(size: 56))
                     .foregroundStyle(.white)
-                    Text("2")
-                    .font(.system(size: 14))
-                    .fontWeight(.bold)
-                    .foregroundStyle(.purple)
-                    .padding(6)
-                    .background(.white)
-                    .clipShape(Circle())
-                    .offset(x: 20, y: -20)
                 }
-                VStack(spacing: 8) {
+                VStack(alignment: .center, spacing: 8) {
                     Text("HUNGRY FOR")
                     .font(.system(size: 32))
                     .fontWeight(.bold)
@@ -32,37 +24,36 @@ struct Screen2View: View {
                     .foregroundStyle(.white)
                 }
                 Text("Turn on notifications to stay informed about exclusive Taco Bell offers, events, and new menu items.")
-                .foregroundStyle(.white)
+                .foregroundStyle(.white.opacity(0.9))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-                VStack(spacing: 16) {
+                .font(.system(size: 16))
+                VStack(spacing: 12) {
                     Text("OK, LET'S GO")
+                    .font(.system(size: 14))
                     .fontWeight(.bold)
-                    .foregroundStyle(.purple)
-                    .font(.system(size: 16))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(16)
-                    .background(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .padding(.vertical, 16)
+                    .background(.black.opacity(0.3))
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
                     Text("NOT NOW")
+                    .font(.system(size: 14))
                     .fontWeight(.bold)
                     .foregroundStyle(.purple)
-                    .font(.system(size: 16))
                     .frame(maxWidth: .infinity)
-                    .padding(16)
+                    .padding(.vertical, 16)
                     .background(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
                 }
-                .padding(.horizontal, 48)
+                .frame(maxWidth: .infinity)
                 Spacer()
                 Text("Taco Bell will use notifications to facilitate mobile orders and to send you local deals, rewards, and news as described in our Privacy Statement and US Privacy Notice.")
-                .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.8))
+                .font(.system(size: 11))
+                .foregroundStyle(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(16)
             }
-            .padding(16)
+            .padding(.horizontal, 32)
         }
     }
 }

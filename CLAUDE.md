@@ -111,6 +111,9 @@ VS(sp:12) {
 | `Div` | `Divider()` | Horizontal line |
 | `Scroll` | `ScrollView` | Scrollable container |
 | `SF("placeholder")` | `SecureField` | Alt secure field syntax |
+| `Rect` | `Rectangle()` | Shape (image placeholder, bg) |
+| `Circle` | `Circle()` | Circle shape |
+| `Capsule` | `Capsule()` | Capsule shape |
 
 ## Container Arguments
 
@@ -138,6 +141,12 @@ Arguments in `()` on containers. Named with `:`.
 ### Foreground Styles (no args)
 `.secondary` `.tertiary` `.quaternary`
 
+### Text Decoration (no args)
+`.underline` `.italic`
+
+### Layout (no args)
+`.ignoresSafeArea`
+
 ### With Arguments
 | Modifier | SwiftUI | Example |
 |----------|---------|---------|
@@ -145,6 +154,7 @@ Arguments in `()` on containers. Named with `:`.
 | `.bg(.color)` | `.background(.color)` | `.bg(.red)` |
 | `.f(size)` | `.font(.system(size:))` | `.f(24)` |
 | `.font(.style)` | `.font(.style)` | `.font(.largeTitle)` |
+| `.tracking(val)` | `.tracking(val)` | `.tracking(2)` |
 | `.frame(w:,h:)` | `.frame(width:,height:)` | `.frame(w:100,h:50)` |
 | `.frame(maxW:.inf)` | `.frame(maxWidth:.infinity)` | |
 | `.opacity(val)` | `.opacity(val)` | `.opacity(0.3)` |
@@ -152,10 +162,35 @@ Arguments in `()` on containers. Named with `:`.
 | `.p(val)` | `.padding(val)` | `.p(16)` |
 | `.px(val)` | `.padding(.horizontal,val)` | `.px(8)` |
 | `.py(val)` | `.padding(.vertical,val)` | `.py(8)` |
+| `.pt(val)` | `.padding(.top,val)` | `.pt(8)` |
+| `.pb(val)` | `.padding(.bottom,val)` | `.pb(8)` |
+| `.pl(val)` | `.padding(.leading,val)` | `.pl(8)` |
+| `.pr(val)` | `.padding(.trailing,val)` | `.pr(8)` |
 | `.r(val)` | `.clipShape(RoundedRectangle(...))` | `.r(12)` |
+| `.offset(x:,y:)` | `.offset(x:,y:)` | `.offset(x:10, y:-5)` |
 
-### Generic Passthrough
-Any unrecognized modifier is passed through as-is: `.someModifier(args)` → `.someModifier(args)`
+### Shapes & Borders
+| Modifier | What it does | Example |
+|----------|-------------|---------|
+| `.stroke(.color)` | Shape outline | `Rect.stroke(.gray)` |
+| `.stroke(.color, w:2)` | Shape outline with width | `Rect.stroke(.purple, w:2)` |
+| `.border(.color)` | Container border (8pt radius) | `.border(.gray)` |
+| `.border(.color, r:12)` | Border with custom radius | `.border(.blue, r:12)` |
+| `.border(.color, w:2, r:12)` | Border with width + radius | `.border(.gray, w:2, r:12)` |
+| `.clipShape(Capsule)` | Clip to capsule | `.clipShape(Capsule)` |
+| `.clipShape(Circle)` | Clip to circle | `.clipShape(Circle)` |
+
+### Overlay (layer DSL content on top)
+```
+Circle.fg(.blue).overlay { Img(sys:"plus").f(14).fg(.white) }
+```
+Use `{ }` braces — DSL elements inside get parsed and expanded.
+
+### Color chaining
+Colors support method chaining: `.fg(.white.opacity(0.8))`, `.bg(.gray.opacity(0.3))`
+
+### No passthrough
+**Only use modifiers listed above.** Unknown modifiers will cause parser errors. If you need something not listed, add it to the generator.
 
 ## Repetition
 
