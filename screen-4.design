@@ -1,0 +1,50 @@
+Tab(tint:#520080, active:0) {
+  Tab.item("Home", sys:"house.fill") {
+    VS(sp:0) {
+      Scroll {
+        VS(sp:0, al:.leading) {
+          VS(sp:4, al:.center, p:12) {
+            Seg("PICKUP", "DELIVERY", active:0)
+            T("LOCATION").caption.bold.fg(.secondary)
+            T("941 W Randolph St, Chicago, IL, 60607").caption.fg(.purple).underline.multiline(.center)
+          }
+          VS(sp:4, al:.leading, px:16) {
+            T("Hey there").title.bold
+            HS(sp:8) {
+              HS(sp:4) {
+                Img(sys:"envelope.fill").f(14)
+                T("INBOX").bold.caption
+              }
+              Div
+              T("Log In or Sign Up to get your cravings.").caption.fg(.secondary)
+            }
+          }.py(8)
+          ZS(al:.bottomLeading) {
+            Rect.fg(.brown.opacity(0.8)).frame(h:200).r(12)
+            VS(sp:8, al:.leading, p:16) {
+              T("YOUR PICK.\nIT'S FREE.").title2.bold.fg(.white)
+              T("Join Taco Bell® Rewards and choose a\nfree welcome reward from this\ncraveable lineup.").caption.fg(.white.opacity(0.9))
+              B.text("JOIN REWARDS").bold.caption.fg(.white).px(12).py(6).bg(.black).r(4)
+            }
+          }.px(16)
+          VS(sp:12, al:.center, p:24) {
+            ZS {
+              Circle.stroke(.orange, w:6).frame(w:150,h:150)
+              VS(sp:2, al:.center) {
+                T("$1").f(32).bold
+                T("= 10 points*").f(14).bold
+              }
+            }
+            T("1. EARN POINTS FOR FREE FOOD").bold.f(15)
+            T("Rack up points with every qualifying order on the app, drive-thru, or kiosk. Celebrate every 250 points with a free reward.").multiline(.center).caption.fg(.secondary)
+          }
+        }
+      }
+      B.text("START ORDER").bold.fg(.white).f(16).frame(maxW:.inf).py(14).bg(#520080).r(28).px(16).pb(8)
+    }
+  }
+  Tab.item("Menu", sys:"menucard")
+  Tab.item("Rewards", sys:"star")
+  Tab.item("Check In", sys:"mappin.and.ellipse")
+  Tab.item("Profile", sys:"person")
+}

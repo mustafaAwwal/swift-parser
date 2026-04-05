@@ -26,9 +26,7 @@ The DSL evolves by building real screens, not by speculating about what might be
         ↓
 Parser (Node.js) → expands to .swift
         ↓
-swiftc -typecheck → validates syntax
-        ↓
-xcodebuild → builds on iOS Simulator
+User builds in Xcode
         ↓
 xcrun simctl screenshot → capture result
 ```
@@ -59,18 +57,14 @@ sample-images/     — reference screenshots to recreate
 # Parse .design → Swift
 node parser/index.js <input.design> [output.swift]
 
-# Validate Swift (catches errors before full build)
-swiftc -typecheck -sdk "$(xcrun --show-sdk-path --sdk iphonesimulator)" -target arm64-apple-ios18.0-simulator design/Theme.swift design/Components.swift <file.swift>
+# Token stats (DSL vs Swift compression)
+node parser/stats.js <input.design>
 
-# Build
-xcodebuild -project design.xcodeproj -scheme design -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
-
-# Screenshot
+# Screenshot (after user has built)
 xcrun simctl io booted screenshot output.png
-
-# Run tests
-cd parser && node --test test.js
 ```
+
+**IMPORTANT: Never build the Xcode project yourself.** After compiling DSL → Swift, ask the user to build in Xcode. Once they confirm the build succeeded, take the screenshot and review it.
 
 ---
 

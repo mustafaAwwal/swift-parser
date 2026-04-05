@@ -1,0 +1,16 @@
+ZS {
+  Rect.fg(#7B2FBE).ignoresSafeArea
+  VS(al:.center, p:24) {
+    Spacer
+    VS(sp:20, al:.center) {
+      Img(sys:"flame.fill").f(48).fg(.white)
+      T("KEEP US IN\nTHE LOOP").f(32).bold.fg(.white).multiline(.center)
+      T("Turn on tracking to receive personalized offers and updates based on your dining preferences.").fg(.white.opacity(0.9)).multiline(.center).callout
+    }
+    VS(sp:12) {
+      B.text("MAKE YOUR CHOICE").bold.fg(.white).f(15).frame(maxW:.inf).py(14).bg(#520080).r(28)
+    }.px(16).pt(32)
+    Spacer
+    T("Taco Bell would like your permission to share your data in order to show you ads tailored to you as described in our Notice of Financial Incentive, Privacy Statement and US Privacy Notice. You do not have to opt in to use this app.").fg(.white.opacity(0.7)).caption.multiline(.center).px(8)
+  }
+}

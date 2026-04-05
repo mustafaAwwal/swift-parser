@@ -2,16 +2,19 @@ ZS {
   Rect.fg(#7B2FBE).ignoresSafeArea
   VS(al:.center, p:24) {
     Spacer
-    VS(sp:16, al:.center) {
-      Img(sys:"bell.badge.fill").f(48).fg(.white)
-      T("HUNGRY FOR\nUPDATES?").f(34).bold.fg(.white).multiline(.center)
+    VS(sp:20, al:.center) {
+      ZS {
+        Img(sys:"iphone").f(48).fg(.white)
+        Circle.fg(.white).frame(w:12,h:12).offset(x:14,y:-18)
+      }
+      T("HUNGRY FOR\nUPDATES?").f(32).bold.fg(.white).multiline(.center)
       T("Turn on notifications to stay informed about exclusive Taco Bell offers, events, and new menu items.").fg(.white.opacity(0.9)).multiline(.center).callout
     }
     VS(sp:12) {
-      B.text("OK, LET'S GO").bold.fg(.white).f(15).frame(maxW:.inf).py(16).bg(#520080)
-      B.text("NOT NOW").bold.fg(.black).f(15).frame(maxW:.inf).py(16).bg(.white)
-    }.px(24).pt(24)
+      B.text("OK, LET'S GO").bold.fg(.white).f(15).frame(maxW:.inf).py(14).bg(#520080).r(28)
+      B.text("NOT NOW").bold.fg(.black).f(15).frame(maxW:.inf).py(14).bg(.white).r(28)
+    }.px(16).pt(32)
     Spacer
-    T("Taco Bell will use notifications to facilitate mobile orders and to send you local deals, rewards, and news as described in our Privacy Statement and US Privacy Notice.").fg(#520080).caption.multiline(.center)
+    T("Taco Bell will use notifications to facilitate mobile orders and to send you local deals, rewards, and news as described in our Privacy Statement and US Privacy Notice.").fg(.white.opacity(0.7)).caption.multiline(.center).px(8)
   }
 }
