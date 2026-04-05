@@ -1,0 +1,119 @@
+ZS {
+  LG(#1A1A2E, #2D1B4E, #1A1A2E, dir:.down).ignoresSafeArea
+  Scroll {
+    VS(sp:24, al:.center, px:20, pt:16, pb:32) {
+      HS {
+        VS(sp:2, al:.leading) {
+          T("Your Profile").caption.bold.fg(.white.opacity(0.5))
+          T("Hinge Analysis").title2.bold.fg(.white)
+        }
+        Spacer
+        ZS {
+          Circle.fg(.white.opacity(0.1)).frame(w:44,h:44)
+          Img(sys:"person.crop.circle.fill").f(28).fg(.white.opacity(0.6))
+        }
+      }
+      VS(sp:16, al:.center, py:24) {
+        ZS {
+          Circle.fg(#E5625E.opacity(0.08)).frame(w:180,h:180)
+          Circle.ringTrack(#E5625E, w:6).frame(w:140,h:140)
+          Circle.ring(0.84, #E5625E, w:6).frame(w:140,h:140)
+          VS(sp:0, al:.center) {
+            T("8.4").f(42).bold.fg(.white)
+            T("out of 10").caption.fg(.white.opacity(0.8))
+          }
+        }
+        T("Top 12% in San Francisco").semibold.fg(#E5625E)
+        T("Your profile outperforms most in your area.\nA few tweaks could push you into the top 5%.").multiline(.center).caption.fg(.white.opacity(0.5))
+      }
+      Grid(cols:3, sp:8) {
+        VS(sp:6, al:.center, p:16) {
+          Img(sys:"heart.fill").f(20).fg(#E5625E)
+          T("142").f(22).bold.fg(.white)
+          T("Likes / wk").caption.fg(.white.opacity(0.5))
+        }.bg(.white.opacity(0.08)).r(16)
+        VS(sp:6, al:.center, p:16) {
+          Img(sys:"bubble.left.fill").f(20).fg(#6C5CE7)
+          T("38").f(22).bold.fg(.white)
+          T("Matches / wk").caption.fg(.white.opacity(0.5))
+        }.bg(.white.opacity(0.08)).r(16)
+        VS(sp:6, al:.center, p:16) {
+          Img(sys:"rosette").f(20).fg(#FFD700)
+          T("6").f(22).bold.fg(.white)
+          T("Roses / wk").caption.fg(.white.opacity(0.5))
+        }.bg(.white.opacity(0.08)).r(16)
+      }
+      VS(sp:12, al:.leading) {
+        T("What's Working").headline.bold.fg(.white)
+        HS(sp:12) {
+          ZS {
+            Circle.fg(#00B894.opacity(0.2)).frame(w:40,h:40)
+            Img(sys:"checkmark").f(16).bold.fg(#00B894)
+          }
+          VS(sp:2, al:.leading) {
+            T("Your 'green flag' prompt gets 3x more comments than average").callout.fg(.white)
+            T("Keep it — this is your strongest asset").caption.fg(#00B894)
+          }
+        }
+        HS(sp:12) {
+          ZS {
+            Circle.fg(#00B894.opacity(0.2)).frame(w:40,h:40)
+            Img(sys:"checkmark").f(16).bold.fg(#00B894)
+          }
+          VS(sp:2, al:.leading) {
+            T("Photo #3 (hiking candid) drives the most profile visits").callout.fg(.white)
+            T("Natural light + full body shots perform well").caption.fg(#00B894)
+          }
+        }
+      }
+      VS(sp:12, al:.leading) {
+        T("Top Suggestions").headline.bold.fg(.white)
+        VS(sp:4, al:.leading, p:16) {
+          HS(sp:10) {
+            ZS {
+              Circle.fg(#E5625E.opacity(0.2)).frame(w:36,h:36)
+              T("1").f(14).bold.fg(#E5625E)
+            }
+            T("Move hiking photo to slot #1").semibold.fg(.white)
+          }
+          T("Your current lead photo is too dark and cropped tight. Profiles with bright, full-body lead photos get 34% more likes on Hinge.").caption.fg(.white.opacity(0.5)).pl(46)
+          V.badge("HIGH IMPACT").fg(#E5625E)
+        }.bg(.white.opacity(0.06)).r(16)
+        VS(sp:4, al:.leading, p:16) {
+          HS(sp:10) {
+            ZS {
+              Circle.fg(#FDCB6E.opacity(0.2)).frame(w:36,h:36)
+              T("2").f(14).bold.fg(#FDCB6E)
+            }
+            T("Rewrite your bio with a hook").semibold.fg(.white)
+          }
+          T("Your bio says 'love adventures and coffee' — so does everyone's. Try: 'I'll plan the road trip if you pick the playlist.' Specific > generic.").caption.fg(.white.opacity(0.5)).pl(46)
+          V.badge("MEDIUM IMPACT").fg(#FDCB6E)
+        }.bg(.white.opacity(0.06)).r(16)
+        VS(sp:4, al:.leading, p:16) {
+          HS(sp:10) {
+            ZS {
+              Circle.fg(#6C5CE7.opacity(0.2)).frame(w:36,h:36)
+              T("3").f(14).bold.fg(#6C5CE7)
+            }
+            T("Add a group photo in slot #5").semibold.fg(.white)
+          }
+          T("You have zero social proof photos. One casual group shot signals you're fun to be around — not a loner or catfish.").caption.fg(.white.opacity(0.5)).pl(46)
+          V.badge("QUICK WIN").fg(#6C5CE7)
+        }.bg(.white.opacity(0.06)).r(16)
+        VS(sp:4, al:.leading, p:16) {
+          HS(sp:10) {
+            ZS {
+              Circle.fg(#4ECDC4.opacity(0.2)).frame(w:36,h:36)
+              T("4").f(14).bold.fg(#4ECDC4)
+            }
+            T("Swap 'Two Truths' for 'Together we could'").semibold.fg(.white)
+          }
+          T("Your 'Two Truths and a Lie' prompt has the lowest engagement. 'Together we could...' prompts get 2x more comments because they invite collaboration.").caption.fg(.white.opacity(0.5)).pl(46)
+          V.badge("EASY FIX").fg(#4ECDC4)
+        }.bg(.white.opacity(0.06)).r(16)
+      }
+      T("Refresh Analysis").bold.fg(.white).f(16).frame(maxW:.inf).py(14).bg(#E5625E).r(12)
+    }
+  }
+}

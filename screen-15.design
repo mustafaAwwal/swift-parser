@@ -1,0 +1,147 @@
+Tab(tint:.primary, active:4) {
+  Tab.item("Home", sys:"house.fill") { T("") }
+  Tab.item("Search", sys:"magnifyingglass") { T("") }
+  Tab.item("New", sys:"plus.app") { T("") }
+  Tab.item("Reels", sys:"play.square") { T("") }
+  Tab.item("Profile", sys:"person.fill") {
+    VS(sp:0) {
+      HS(px:16, py:8) {
+        T("alex_design").headline.bold
+        Spacer
+        HS(sp:20) {
+          Img(sys:"plus.app").f(22)
+          Menu("More", sys:"line.3.horizontal") {
+            B("Settings", sys:"gearshape")
+            B("Archive", sys:"archivebox")
+            B("Saved", sys:"bookmark")
+            B("Close Friends", sys:"star")
+            Div
+            B("Log Out", sys:"rectangle.portrait.and.arrow.right")
+          }
+        }
+      }
+      Scroll {
+        VS(sp:0, al:.leading) {
+          VS(sp:16, al:.center, px:16, py:16) {
+            HS(sp:24) {
+              VS(sp:8, al:.center) {
+                ZS {
+                  Circle.stroke(LG(#E5625E, #FFD700, dir:.right), w:3).frame(w:86,h:86)
+                  Circle.fg(#E8E8ED).frame(w:78,h:78)
+                  Img(sys:"person.fill").f(32).fg(.gray)
+                }
+                T("alex_design").caption.bold
+              }
+              VS(sp:2, al:.center) {
+                T("248").subheadline.bold
+                T("Posts").caption
+              }
+              VS(sp:2, al:.center) {
+                T("14.2K").subheadline.bold
+                T("Followers").caption
+              }
+              VS(sp:2, al:.center) {
+                T("892").subheadline.bold
+                T("Following").caption
+              }
+            }
+            VS(sp:4, al:.leading) {
+              T("Alex Rivera").subheadline.bold
+              T("Digital designer & photographer\n📍 San Francisco\n✨ Creating things that make people smile").caption
+            }.frame(maxW:.inf, al:.leading)
+            HS(sp:8) {
+              T("Edit Profile").caption.bold.frame(maxW:.inf).py(6).bg(#F5F5F7).r(8)
+              T("Share Profile").caption.bold.frame(maxW:.inf).py(6).bg(#F5F5F7).r(8)
+              Img(sys:"person.badge.plus").f(14).px(12).py(6).bg(#F5F5F7).r(8)
+            }
+          }
+          VS(sp:2, al:.leading, px:16) {
+            T("Story Highlights").caption.bold.fg(.secondary)
+          }
+          Scroll(.horizontal) {
+            HS(sp:16, px:16, py:8) {
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.stroke(.gray.opacity(0.3), w:1).frame(w:64,h:64)
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"airplane").f(22).fg(.gray)
+                }
+                T("Travel").caption
+              }
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.stroke(.gray.opacity(0.3), w:1).frame(w:64,h:64)
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"camera").f(22).fg(.gray)
+                }
+                T("Studio").caption
+              }
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.stroke(.gray.opacity(0.3), w:1).frame(w:64,h:64)
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"cup.and.saucer").f(22).fg(.gray)
+                }
+                T("Coffee").caption
+              }
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.stroke(.gray.opacity(0.3), w:1).frame(w:64,h:64)
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"dog").f(22).fg(.gray)
+                }
+                T("Luna").caption
+              }
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.stroke(.gray.opacity(0.3), w:1).frame(w:64,h:64)
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"paintbrush").f(22).fg(.gray)
+                }
+                T("Art").caption
+              }
+              VS(sp:6, al:.center) {
+                ZS {
+                  Circle.fg(#F5F5F7).frame(w:60,h:60)
+                  Img(sys:"plus").f(22).fg(.primary)
+                }
+                T("New").caption
+              }
+            }
+          }
+          Div.px(16)
+          HS {
+            Spacer
+            Img(sys:"square.grid.3x3").f(20).fg(.primary)
+            Spacer
+            Img(sys:"person.crop.rectangle").f(20).fg(.secondary)
+            Spacer
+          }.py(8)
+          Div.px(16)
+          VS(sp:1) {
+            HS(sp:1) {
+              Rect.fg(#D1D1D6).aspectRatio(1)
+              Rect.fg(#C7C7CC).aspectRatio(1)
+              Rect.fg(#B0B0B8).aspectRatio(1)
+            }
+            HS(sp:1) {
+              Rect.fg(#A8A8B0).aspectRatio(1)
+              Rect.fg(#D1D1D6).aspectRatio(1)
+              Rect.fg(#C0C0C8).aspectRatio(1)
+            }
+            HS(sp:1) {
+              Rect.fg(#B8B8C0).aspectRatio(1)
+              Rect.fg(#D1D1D6).aspectRatio(1)
+              Rect.fg(#A0A0A8).aspectRatio(1)
+            }
+            HS(sp:1) {
+              Rect.fg(#C7C7CC).aspectRatio(1)
+              Rect.fg(#B0B0B8).aspectRatio(1)
+              Rect.fg(#D1D1D6).aspectRatio(1)
+            }
+          }
+        }
+      }
+    }
+  }
+}

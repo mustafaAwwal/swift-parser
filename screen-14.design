@@ -1,0 +1,152 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:12) {
+      VS(sp:2, al:.leading) {
+        T("Sunday, Apr 6").caption.fg(.white.opacity(0.4))
+        T("Activity").title.bold.fg(.white)
+      }
+      Spacer
+      Img(sys:"person.crop.circle.fill").f(28).fg(.white.opacity(0.4))
+    }
+    Scroll {
+      VS(sp:20, al:.leading, px:20, pt:8, pb:32) {
+        ZS {
+          Rect.fg(#1C1C1E).r(16)
+          VS(sp:16, p:20) {
+            HS {
+              T("Move, Exercise, Stand").caption.bold.fg(.white.opacity(0.4))
+              Spacer
+            }
+            HS(sp:24) {
+              ZS {
+                Circle.ringTrack(#E5625E, w:10).frame(w:120,h:120)
+                Circle.ring(0.78, #E5625E, w:10).frame(w:120,h:120)
+                Circle.ringTrack(#4ECDC4, w:10).frame(w:96,h:96)
+                Circle.ring(0.92, #4ECDC4, w:10).frame(w:96,h:96)
+                Circle.ringTrack(#00E5FF, w:10).frame(w:72,h:72)
+                Circle.ring(0.45, #00E5FF, w:10).frame(w:72,h:72)
+              }
+              VS(sp:12, al:.leading) {
+                VS(sp:2, al:.leading) {
+                  T("Move").caption.bold.fg(#E5625E)
+                  HS(sp:4) {
+                    T("482").f(22).bold.fg(.white)
+                    T("/ 620 CAL").caption.fg(.white.opacity(0.4))
+                  }
+                }
+                VS(sp:2, al:.leading) {
+                  T("Exercise").caption.bold.fg(#4ECDC4)
+                  HS(sp:4) {
+                    T("28").f(22).bold.fg(.white)
+                    T("/ 30 MIN").caption.fg(.white.opacity(0.4))
+                  }
+                }
+                VS(sp:2, al:.leading) {
+                  T("Stand").caption.bold.fg(#00E5FF)
+                  HS(sp:4) {
+                    T("6").f(22).bold.fg(.white)
+                    T("/ 12 HRS").caption.fg(.white.opacity(0.4))
+                  }
+                }
+              }
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("This Week").headline.bold.fg(.white)
+          ZS {
+            Rect.fg(#1C1C1E).r(16)
+            VS(sp:12, p:20) {
+              HS {
+                T("Calories Burned").caption.bold.fg(.white.opacity(0.4))
+                Spacer
+                T("Avg 534").caption.fg(#E5625E)
+              }
+              Bar(380, 520, 680, 460, 590, 740, 482, color:#E5625E, labels:"M,T,W,T,F,S,S", h:120, active:6)
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("Vitals").headline.bold.fg(.white)
+          Scroll(.horizontal) {
+            HS(sp:12, al:.top) {
+              ZS {
+                Rect.fg(#1C1C1E).frame(w:160,h:160).r(16)
+                VS(sp:8, al:.leading, p:16) {
+                  Img(sys:"heart.fill").f(20).fg(#E5625E)
+                  Spacer
+                  T("72").f(32).bold.fg(.white)
+                  T("BPM").caption.fg(.white.opacity(0.4))
+                  T("Heart Rate").caption.bold.fg(#E5625E)
+                }
+              }
+              ZS {
+                Rect.fg(#1C1C1E).frame(w:160,h:160).r(16)
+                VS(sp:8, al:.leading, p:16) {
+                  Img(sys:"bed.double.fill").f(20).fg(#6C5CE7)
+                  Spacer
+                  T("7h 24m").f(24).bold.fg(.white)
+                  T("Last Night").caption.fg(.white.opacity(0.4))
+                  T("Sleep").caption.bold.fg(#6C5CE7)
+                }
+              }
+              ZS {
+                Rect.fg(#1C1C1E).frame(w:160,h:160).r(16)
+                VS(sp:8, al:.leading, p:16) {
+                  Img(sys:"figure.walk").f(20).fg(#4ECDC4)
+                  Spacer
+                  T("8,432").f(28).bold.fg(.white)
+                  T("Today").caption.fg(.white.opacity(0.4))
+                  T("Steps").caption.bold.fg(#4ECDC4)
+                }
+              }
+              ZS {
+                Rect.fg(#1C1C1E).frame(w:160,h:160).r(16)
+                VS(sp:8, al:.leading, p:16) {
+                  Img(sys:"drop.fill").f(20).fg(#00E5FF)
+                  Spacer
+                  T("62%").f(28).bold.fg(.white)
+                  T("Avg Today").caption.fg(.white.opacity(0.4))
+                  T("Blood O₂").caption.bold.fg(#00E5FF)
+                }
+              }
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("Recent Workouts").headline.bold.fg(.white)
+          VS(sp:8) {
+            HS(sp:14, p:16) {
+              Img(sys:"figure.run").ico(#4ECDC4, size:44)
+              VS(sp:2, al:.leading) {
+                T("Outdoor Run").subheadline.bold.fg(.white)
+                T("5.2 km · 28:34 · 312 cal").caption.fg(.white.opacity(0.4))
+              }
+              Spacer
+              T("Today").caption.fg(.white.opacity(0.3))
+            }.bg(#1C1C1E).r(12)
+            HS(sp:14, p:16) {
+              Img(sys:"figure.strengthtraining.traditional").ico(#FF9500, size:44)
+              VS(sp:2, al:.leading) {
+                T("Strength Training").subheadline.bold.fg(.white)
+                T("45 min · 280 cal").caption.fg(.white.opacity(0.4))
+              }
+              Spacer
+              T("Yesterday").caption.fg(.white.opacity(0.3))
+            }.bg(#1C1C1E).r(12)
+            HS(sp:14, p:16) {
+              Img(sys:"figure.yoga").ico(#6C5CE7, size:44)
+              VS(sp:2, al:.leading) {
+                T("Yoga").subheadline.bold.fg(.white)
+                T("30 min · 145 cal").caption.fg(.white.opacity(0.4))
+              }
+              Spacer
+              T("Wed").caption.fg(.white.opacity(0.3))
+            }.bg(#1C1C1E).r(12)
+          }
+        }
+      }
+    }
+  }
+}

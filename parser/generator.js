@@ -23,6 +23,15 @@ const TAG_MAP = {
   LG: 'LinearGradient',
   TC: 'TextConcat',
   Seg: 'Picker',
+  Grid: 'LazyVGrid',
+  Bar: 'BarChart',
+  Label: 'Label',
+  Toggle: 'Toggle',
+  DatePicker: 'DatePicker',
+  Slider: 'Slider',
+  Stepper: 'Stepper',
+  ProgressView: 'ProgressView',
+  Menu: 'Menu',
 };
 
 // Modifiers that map to .font(.<name>)
@@ -44,7 +53,7 @@ const FOREGROUND_STYLES = new Set([
 ]);
 
 // Container props that become SwiftUI init parameters (not modifiers)
-const INIT_PARAMS = new Set(['sp', 'al']);
+const INIT_PARAMS = new Set(['sp', 'al', 'cols']);
 
 // Container props that become SwiftUI modifiers on the container
 const CONTAINER_MODIFIERS = new Set(['p', 'px', 'py', 'r']);
@@ -54,7 +63,7 @@ const KNOWN_MODIFIERS = new Set([
   // Shorthands with args
   'fg', 'bg', 'f', 'font', 'frame', 'p', 'px', 'py', 'pt', 'pb', 'pl', 'pr',
   'r', 'opacity', 'multiline', 'multilineTextAlignment', 'offset', 'border', 'stroke', 'clipShape',
-  'tracking',
+  'tracking', 'trim', 'rotate', 'ring', 'ringTrack', 'aspectRatio', 'blur', 'scaleEffect', 'ico', 'tint',
   // Block modifiers
   'overlay',
   // With args (misc)
@@ -161,6 +170,16 @@ ${body}
       return this.generateTextConcat(node);
     }
 
+    // Handle Grid container
+    if (tag === 'Grid' && children.length > 0) {
+      return this.generateGrid(node);
+    }
+
+    // Handle Menu container
+    if (tag === 'Menu' && children.length > 0) {
+      return this.generateMenu(node);
+    }
+
     // Handle containers (have children)
     if (children.length > 0) {
       return this.generateContainer(node);
@@ -179,8 +198,6 @@ ${body}
   // Dispatch to the right generation strategy based on preset type
   generateFromPreset(node, def) {
     switch (def.type) {
-      case 'struct':
-        return this.generateStructPreset(node, def);
       case 'modifier':
         return this.generateModifierPreset(node, def);
       case 'containerModifier':
@@ -191,28 +208,20 @@ ${body}
         return this.generateTextField(node, def);
       case 'tabItem':
         return this.generateTabItem(node);
-      case 'floatingField':
-        return this.generateFloatingField(node, def);
-      case 'imagePlaceholder':
-        return this.generateImagePlaceholder(node);
-      case 'searchBar':
-        return this.generateSearchBar(node);
+      case 'searchInline':
+        return this.generateSearchInline(node);
+      case 'floatInline':
+        return this.generateFloatInline(node, def);
+      case 'placeholderInline':
+        return this.generatePlaceholderInline(node);
+      case 'progressCircular':
+        return this.generateProgressCircular(node);
       default:
         return this.generateLeaf(node);
     }
   }
 
-  generateStructPreset(node, def) {
-    const { modifiers } = node;
-    const label = escapeSwift(this.getFirstStringArg(node.args));
-    const lines = [];
-    lines.push(`${this.pad()}${def.swift}(${def.argKey}: "${label}")`);
-    for (const mod of modifiers) {
-      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
-    }
-    return lines.join('\n');
-  }
-
+  // modifier: base view + .presetName() + user modifiers
   generateModifierPreset(node, def) {
     const { tag, modifiers } = node;
     const lines = [];
@@ -232,6 +241,7 @@ ${body}
     return lines.join('\n');
   }
 
+  // containerModifier: VStack + .presetName() + user modifiers
   generateContainerModifierPreset(node, def) {
     const { modifiers, children } = node;
     const lines = [];
@@ -250,16 +260,13 @@ ${body}
     return lines.join('\n');
   }
 
+  // leafModifier: different base view + .presetName() + user modifiers
   generateLeafModifierPreset(node, def) {
     const { modifiers } = node;
     const label = escapeSwift(this.getFirstStringArg(node.args));
     const lines = [];
 
-    if (def.viewTag === 'Text') {
-      lines.push(`${this.pad()}Text("${label}")`);
-    } else {
-      lines.push(`${this.pad()}${def.viewTag}("${label}")`);
-    }
+    lines.push(`${this.pad()}${def.viewTag}("${label}")`);
 
     lines.push(`${this.pad()}.${def.swift}()`);
 
@@ -269,6 +276,7 @@ ${body}
     return lines.join('\n');
   }
 
+  // textField: TextField/SecureField + roundedBorder style
   generateTextField(node, def) {
     const { modifiers } = node;
     const placeholder = escapeSwift(this.getFirstStringArg(node.args));
@@ -276,6 +284,102 @@ ${body}
 
     lines.push(`${this.pad()}${def.view}("${placeholder}", text: .constant(""))`);
     lines.push(`${this.pad()}.textFieldStyle(.roundedBorder)`);
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // TF.search("Search...") → inline HStack composition
+  generateSearchInline(node) {
+    const { args, modifiers } = node;
+    const strings = args.filter(a => a.type === 'string').map(a => a.value);
+    const placeholder = escapeSwift(strings[0] || 'Search...');
+    const value = strings[1] ? escapeSwift(strings[1]) : '';
+
+    const lines = [];
+    lines.push(`${this.pad()}HStack(spacing: 8) {`);
+    this.indent++;
+    lines.push(`${this.pad()}Image(systemName: "magnifyingglass")`);
+    lines.push(`${this.pad()}.foregroundStyle(${value ? '.primary' : '.secondary'})`);
+    lines.push(`${this.pad()}Text("${value || placeholder}")`);
+    lines.push(`${this.pad()}.foregroundStyle(${value ? '.primary' : '.secondary'})`);
+    lines.push(`${this.pad()}Spacer()`);
+    if (value) {
+      lines.push(`${this.pad()}Image(systemName: "xmark.circle.fill")`);
+      lines.push(`${this.pad()}.foregroundStyle(.secondary)`);
+    }
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+    lines.push(`${this.pad()}.padding(10)`);
+    lines.push(`${this.pad()}.background(Color(.systemGray6))`);
+    lines.push(`${this.pad()}.clipShape(RoundedRectangle(cornerRadius: 10))`);
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // TF.float("Email") / TF.float("Email", "value") → inline ZStack composition
+  generateFloatInline(node, def) {
+    const { args, modifiers } = node;
+    const strings = args.filter(a => a.type === 'string').map(a => a.value);
+    const label = escapeSwift(strings[0] || 'Label');
+    const value = strings[1] ? escapeSwift(strings[1]) : '';
+    const hasValue = value.length > 0;
+    const displayValue = def.secure && hasValue ? String.fromCharCode(0x2022).repeat(value.length) : value;
+
+    const lines = [];
+    lines.push(`${this.pad()}ZStack(alignment: .topLeading) {`);
+    this.indent++;
+    lines.push(`${this.pad()}RoundedRectangle(cornerRadius: 8)`);
+    lines.push(`${this.pad()}.stroke(Color.gray.opacity(0.4))`);
+    lines.push(`${this.pad()}.frame(height: 56)`);
+    if (hasValue) {
+      lines.push(`${this.pad()}Text("${displayValue}")`);
+      lines.push(`${this.pad()}.padding(.horizontal, 12)`);
+      lines.push(`${this.pad()}.padding(.top, 26)`);
+      lines.push(`${this.pad()}.frame(maxWidth: .infinity, alignment: .leading)`);
+    }
+    lines.push(`${this.pad()}Text("${label}")`);
+    lines.push(`${this.pad()}.font(${hasValue ? '.caption' : '.body'})`);
+    lines.push(`${this.pad()}.foregroundStyle(.secondary)`);
+    lines.push(`${this.pad()}.padding(.horizontal, 12)`);
+    lines.push(`${this.pad()}.padding(.top, ${hasValue ? '8' : '18'})`);
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  // Img.placeholder(h:200, color:.orange, icon:"fork.knife") → inline ZStack
+  generatePlaceholderInline(node) {
+    const { args, modifiers } = node;
+    const hArg = args.find(a => a.type === 'named' && a.key === 'h');
+    const colorArg = args.find(a => a.type === 'named' && a.key === 'color');
+    const iconArg = args.find(a => a.type === 'named' && a.key === 'icon');
+    const h = hArg ? this.argValueToSwift(hArg.value) : '200';
+    const color = colorArg ? this.argValueToSwift(colorArg.value) : '.gray';
+    const icon = iconArg ? this.argValueToSwift(iconArg.value) : '"photo"';
+
+    const lines = [];
+    lines.push(`${this.pad()}ZStack {`);
+    this.indent++;
+    lines.push(`${this.pad()}Rectangle()`);
+    lines.push(`${this.pad()}.foregroundStyle(${color}.opacity(0.2))`);
+    lines.push(`${this.pad()}Image(systemName: ${icon})`);
+    lines.push(`${this.pad()}.font(.system(size: 32))`);
+    lines.push(`${this.pad()}.foregroundStyle(${color}.opacity(0.5))`);
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+    lines.push(`${this.pad()}.frame(maxWidth: .infinity)`);
+    lines.push(`${this.pad()}.frame(height: ${h})`);
+    lines.push(`${this.pad()}.clipShape(RoundedRectangle(cornerRadius: 8))`);
 
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
@@ -424,6 +528,29 @@ ${body}
       }
     }
 
+    // Handle ScrollView direction: Scroll(.horizontal) or Scroll(.vertical)
+    if (tag === 'Scroll') {
+      const dirArg = args.find(a => (a.type === 'enum' || a.type === 'expr') && (a.value === '.horizontal' || a.value === '.vertical'));
+      const dir = dirArg ? dirArg.value : null;
+      const lines = [];
+      if (dir) {
+        lines.push(`${this.pad()}ScrollView(${dir}, showsIndicators: false) {`);
+      } else {
+        lines.push(`${this.pad()}ScrollView {`);
+      }
+      this.indent++;
+      lines.push(this.generateElements(children));
+      this.indent--;
+      lines.push(`${this.pad()}}`);
+      for (const cm of containerMods) {
+        lines.push(`${this.pad()}${this.expandContainerModifier(cm)}`);
+      }
+      for (const mod of modifiers) {
+        lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+      }
+      return lines.join('\n');
+    }
+
     // Build the opening line — alignment must precede spacing in SwiftUI
     let opening = swiftTag;
     const paramStrs = [];
@@ -487,6 +614,58 @@ ${body}
       lines.push(`${this.pad()}${this.generateLinearGradient(args)}`);
     } else if (tag === 'Seg') {
       lines.push(this.generateSegmentedPicker(args));
+    } else if (tag === 'Bar') {
+      lines.push(this.generateBarChart(node));
+      return lines.join('\n');
+    } else if (tag === 'Label') {
+      const sysArg = args.find(a => a.type === 'named' && a.key === 'sys');
+      const strings = args.filter(a => a.type === 'string');
+      const label = strings.length > 0 ? escapeSwift(strings[strings.length > 1 ? 1 : 0].value) : '';
+      if (sysArg) {
+        lines.push(`${this.pad()}Label("${label}", systemImage: "${escapeSwift(sysArg.value.value)}")`);
+      } else {
+        lines.push(`${this.pad()}Label("${label}", systemImage: "questionmark")`);
+      }
+    } else if (tag === 'Toggle') {
+      const label = escapeSwift(this.getFirstStringArg(args));
+      const onArg = args.find(a => a.type === 'named' && a.key === 'on');
+      const on = onArg ? this.argValueToSwift(onArg.value) : 'true';
+      lines.push(`${this.pad()}Toggle("${label}", isOn: .constant(${on}))`);
+    } else if (tag === 'DatePicker') {
+      const label = escapeSwift(this.getFirstStringArg(args));
+      const styleArg = args.find(a => a.type === 'named' && a.key === 'style');
+      const compArg = args.find(a => a.type === 'named' && a.key === 'components');
+      const components = compArg ? this.argValueToSwift(compArg.value) : '.date';
+      lines.push(`${this.pad()}DatePicker("${label}", selection: .constant(Date()), displayedComponents: ${components})`);
+      if (styleArg) {
+        lines.push(`${this.pad()}.datePickerStyle(${this.argValueToSwift(styleArg.value)})`);
+      }
+    } else if (tag === 'Slider') {
+      const valArg = args.find(a => a.type === 'named' && a.key === 'val');
+      const minArg = args.find(a => a.type === 'named' && a.key === 'min');
+      const maxArg = args.find(a => a.type === 'named' && a.key === 'max');
+      const val = valArg ? this.argValueToSwift(valArg.value) : '0.5';
+      const min = minArg ? this.argValueToSwift(minArg.value) : '0';
+      const max = maxArg ? this.argValueToSwift(maxArg.value) : '1';
+      lines.push(`${this.pad()}Slider(value: .constant(${val}), in: ${min}...${max})`);
+    } else if (tag === 'Stepper') {
+      const label = escapeSwift(this.getFirstStringArg(args));
+      const valArg = args.find(a => a.type === 'named' && a.key === 'val');
+      const minArg = args.find(a => a.type === 'named' && a.key === 'min');
+      const maxArg = args.find(a => a.type === 'named' && a.key === 'max');
+      const val = valArg ? this.argValueToSwift(valArg.value) : '0';
+      const min = minArg ? this.argValueToSwift(minArg.value) : '0';
+      const max = maxArg ? this.argValueToSwift(maxArg.value) : '100';
+      lines.push(`${this.pad()}Stepper("${label}", value: .constant(${val}), in: ${min}...${max})`);
+    } else if (tag === 'ProgressView') {
+      // Linear progress: ProgressView(0.75) or ProgressView(val:0.75)
+      const valArg = args.find(a => a.type === 'named' && a.key === 'val') || args.find(a => a.type === 'number');
+      if (valArg) {
+        const val = this.argValueToSwift(valArg.type === 'named' ? valArg.value : valArg);
+        lines.push(`${this.pad()}ProgressView(value: ${val})`);
+      } else {
+        lines.push(`${this.pad()}ProgressView()`);
+      }
     } else {
       const swiftTag = TAG_MAP[tag] || tag;
       if (args.length > 0) {
@@ -620,6 +799,31 @@ ${body}
       return `.opacity(${this.argValueToSwift(args[0])})`;
     }
 
+    // ── Blur ──────────────────────────────────────────────────────
+    // .blur(3) → .blur(radius: 3)
+    if (name === 'blur' && args.length > 0) {
+      return `.blur(radius: ${this.argValueToSwift(args[0])})`;
+    }
+
+    // ── Tint ──────────────────────────────────────────────────────
+    if (name === 'tint' && args.length > 0) {
+      return `.tint(${this.argValueToSwift(args[0])})`;
+    }
+
+    // ── Scale effect ─────────────────────────────────────────────
+    // .scaleEffect(1.2) → .scaleEffect(1.2)
+    if (name === 'scaleEffect' && args.length > 0) {
+      return `.scaleEffect(${this.argValueToSwift(args[0])})`;
+    }
+
+    // ── Aspect ratio ──────────────────────────────────────────────
+    // .aspectRatio(1) → .aspectRatio(1, contentMode: .fit)
+    if (name === 'aspectRatio' && args.length > 0) {
+      const modeArg = args.find(a => a.type === 'named' && a.key === 'mode');
+      const mode = modeArg ? this.argValueToSwift(modeArg.value) : '.fit';
+      return `.aspectRatio(${this.argValueToSwift(args[0])}, contentMode: ${mode})`;
+    }
+
     // ── Multiline text alignment ──────────────────────────────────
     if ((name === 'multiline' || name === 'multilineTextAlignment') && args.length > 0) {
       return `.multilineTextAlignment(${this.argValueToSwift(args[0])})`;
@@ -658,12 +862,64 @@ ${body}
       return `.overlay(RoundedRectangle(cornerRadius: ${radius}).stroke(${color}${lineWidth}))`;
     }
 
+    // ── Trim (for shapes) ──────────────────────────────────────────
+    // .trim(from:0, to:0.84) → .trim(from: 0, to: 0.84)
+    if (name === 'trim') {
+      const fromArg = args.find(a => a.type === 'named' && a.key === 'from');
+      const toArg = args.find(a => a.type === 'named' && a.key === 'to');
+      const from = fromArg ? this.argValueToSwift(fromArg.value) : '0';
+      const to = toArg ? this.argValueToSwift(toArg.value) : '1';
+      return `.trim(from: ${from}, to: ${to})`;
+    }
+
+    // ── Rotation ─────────────────────────────────────────────────────
+    // .rotate(-90) → .rotationEffect(.degrees(-90))
+    if (name === 'rotate' && args.length > 0) {
+      return `.rotationEffect(.degrees(${this.argValueToSwift(args[0])}))`;
+    }
+
+    // ── Ring (convenience for progress arcs on Circle) ───────────────
+    // Circle.ring(0.84, .blue, w:6) → .ring(0.84, .blue, lineWidth: 6)
+    // Implemented as ViewModifier in Theme.swift
+    if (name === 'ring') {
+      const value = args.length > 0 ? this.argValueToSwift(args[0]) : '0.5';
+      const color = args.length > 1 ? this.argValueToSwift(args[1]) : '.blue';
+      const wArg = args.find(a => a.type === 'named' && a.key === 'w');
+      const w = wArg ? this.argValueToSwift(wArg.value) : '8';
+      return `.ring(${value}, ${color}, lineWidth: ${w})`;
+    }
+
+    // Circle.ringTrack(.blue, w:6) → .ringTrack(.blue, lineWidth: 6)
+    // Implemented as ViewModifier in Theme.swift
+    if (name === 'ringTrack') {
+      const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.blue';
+      const wArg = args.find(a => a.type === 'named' && a.key === 'w');
+      const w = wArg ? this.argValueToSwift(wArg.value) : '8';
+      return `.ringTrack(${color}, lineWidth: ${w})`;
+    }
+
+    // ── Icon circle (colored circle behind icon) ──────────────────
+    // Img(sys:"car.fill").ico(#4ECDC4, size:40)
+    // Implemented as ViewModifier in Theme.swift
+    if (name === 'ico') {
+      const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.blue';
+      const sizeArg = args.find(a => a.type === 'named' && a.key === 'size');
+      const size = sizeArg ? this.argValueToSwift(sizeArg.value) : '40';
+      return `.ico(${color}, size: ${size})`;
+    }
+
     // ── Stroke (for shapes) ───────────────────────────────────────
     // .stroke(.gray) → .stroke(.gray)
     // .stroke(.gray, w:2) → .stroke(.gray, lineWidth: 2)
+    // .stroke(.gray, w:2, cap:.round) → .stroke(style: StrokeStyle(...))
     if (name === 'stroke') {
       const color = args.length > 0 ? this.argValueToSwift(args[0]) : '.gray';
       const wArg = args.find(a => a.type === 'named' && a.key === 'w');
+      const capArg = args.find(a => a.type === 'named' && a.key === 'cap');
+      if (capArg) {
+        const w = wArg ? this.argValueToSwift(wArg.value) : '1';
+        return `.stroke(${color}, style: StrokeStyle(lineWidth: ${w}, lineCap: ${this.argValueToSwift(capArg.value)}))`;
+      }
       if (wArg) {
         return `.stroke(${color}, lineWidth: ${this.argValueToSwift(wArg.value)})`;
       }
@@ -770,6 +1026,7 @@ ${body}
     if (val.type === 'string') return `"${escapeSwift(val.value)}"`;
     if (val.type === 'number') return String(val.value);
     if (val.type === 'hex') return `Color(hex: 0x${val.value})`;
+    if (val.type === 'hexExpr') return `Color(hex: 0x${val.hex})${val.chain}`;
     if (val.type === 'gradient') return this.generateLinearGradient(val.args);
     if (val.type === 'enum') {
       if (val.value === '.inf') return '.infinity';
@@ -815,50 +1072,122 @@ ${body}
   // Img.placeholder(h:200, color:.orange, icon:"fork.knife")
   // TF.search("Search...") → SearchBar(placeholder: "Search...")
   // TF.search("Search...", "quesarito") → SearchBar(placeholder: "Search...", value: "quesarito")
-  generateSearchBar(node) {
-    const { args, modifiers } = node;
-    const strings = args.filter(a => a.type === 'string').map(a => a.value);
-    const placeholder = escapeSwift(strings[0] || 'Search...');
-    const value = strings[1] ? escapeSwift(strings[1]) : '';
+  generateGrid(node) {
+    const { args, modifiers, children } = node;
+
+    // Separate init params from container modifiers
+    const namedArgs = args.filter(a => a.type === 'named');
+    const colsArg = namedArgs.find(a => a.key === 'cols');
+    const spArg = namedArgs.find(a => a.key === 'sp');
+    const containerMods = namedArgs.filter(a => CONTAINER_MODIFIERS.has(a.key));
+
+    const cols = colsArg ? Number(this.argValueToSwift(colsArg.value)) : 2;
+    const items = Array(cols).fill('GridItem(.flexible())').join(', ');
 
     const lines = [];
-    if (value) {
-      lines.push(`${this.pad()}SearchBar(placeholder: "${placeholder}", value: "${value}")`);
-    } else {
-      lines.push(`${this.pad()}SearchBar(placeholder: "${placeholder}")`);
+    let opening = `LazyVGrid(columns: [${items}]`;
+    if (spArg) {
+      opening += `, spacing: ${this.argValueToSwift(spArg.value)}`;
+    }
+    opening += ')';
+
+    lines.push(`${this.pad()}${opening} {`);
+    this.indent++;
+    lines.push(this.generateElements(children));
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+
+    for (const cm of containerMods) {
+      lines.push(`${this.pad()}${this.expandContainerModifier(cm)}`);
     }
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
+
     return lines.join('\n');
   }
 
-  generateImagePlaceholder(node) {
+  // Bar(60, 85, 110, color:#E5625E, labels:"M,T,W", h:120, active:6)
+  // → BarChart(values: [60, 85, 110], color: .red, labels: ["M","T","W"], height: 120, active: 6)
+  generateBarChart(node) {
     const { args, modifiers } = node;
-    const parts = [];
-    const hArg = args.find(a => a.type === 'named' && a.key === 'h');
+    const values = args.filter(a => a.type === 'number').map(a => a.value);
     const colorArg = args.find(a => a.type === 'named' && a.key === 'color');
-    const iconArg = args.find(a => a.type === 'named' && a.key === 'icon');
-    if (hArg) parts.push(`height: ${this.argValueToSwift(hArg.value)}`);
+    const labelsArg = args.find(a => a.type === 'named' && a.key === 'labels');
+    const hArg = args.find(a => a.type === 'named' && a.key === 'h');
+    const activeArg = args.find(a => a.type === 'named' && a.key === 'active');
+
+    const parts = [`values: [${values.join(', ')}]`];
     if (colorArg) parts.push(`color: ${this.argValueToSwift(colorArg.value)}`);
-    if (iconArg) parts.push(`icon: ${this.argValueToSwift(iconArg.value)}`);
+    if (labelsArg) {
+      const labels = labelsArg.value.value.split(',').map(l => `"${escapeSwift(l.trim())}"`);
+      parts.push(`labels: [${labels.join(', ')}]`);
+    }
+    if (hArg) parts.push(`height: ${this.argValueToSwift(hArg.value)}`);
+    if (activeArg) parts.push(`active: ${this.argValueToSwift(activeArg.value)}`);
 
     const lines = [];
-    lines.push(`${this.pad()}ImagePlaceholder(${parts.join(', ')})`);
+    lines.push(`${this.pad()}BarChart(${parts.join(', ')})`);
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }
     return lines.join('\n');
   }
 
-  generateFloatingField(node, def) {
-    const { args, modifiers } = node;
-    const strings = args.filter(a => a.type === 'string').map(a => a.value);
-    const label = escapeSwift(strings[0] || '');
-    const value = escapeSwift(strings[1] || '');
+  generateMenu(node) {
+    const { args, modifiers, children } = node;
+    const label = escapeSwift(this.getFirstStringArg(args));
+    const sysArg = args.find(a => a.type === 'named' && a.key === 'sys');
 
     const lines = [];
-    lines.push(`${this.pad()}${def.swift}(label: "${label}", value: "${value}")`);
+    lines.push(`${this.pad()}Menu {`);
+    this.indent++;
+    // Children become Button items inside the menu
+    for (const child of children) {
+      if (child.tag === 'B' || child.tag === 'T') {
+        const childLabel = escapeSwift(this.getFirstStringArg(child.args));
+        const childSys = child.args.find(a => a.type === 'named' && a.key === 'sys');
+        if (childSys) {
+          lines.push(`${this.pad()}Button(action: {}) { Label("${childLabel}", systemImage: "${escapeSwift(childSys.value.value)}") }`);
+        } else {
+          lines.push(`${this.pad()}Button("${childLabel}", action: {})`);
+        }
+      } else if (child.tag === 'Div') {
+        lines.push(`${this.pad()}Divider()`);
+      } else {
+        lines.push(this.generateElement(child));
+      }
+    }
+    this.indent--;
+    lines.push(`${this.pad()}} label: {`);
+    this.indent++;
+    if (sysArg) {
+      lines.push(`${this.pad()}Label("${label}", systemImage: "${escapeSwift(sysArg.value.value)}")`);
+    } else {
+      lines.push(`${this.pad()}Text("${label}")`);
+    }
+    this.indent--;
+    lines.push(`${this.pad()}}`);
+
+    for (const mod of modifiers) {
+      lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+    }
+    return lines.join('\n');
+  }
+
+  generateProgressCircular(node) {
+    const { args, modifiers } = node;
+    const valArg = args.find(a => a.type === 'named' && a.key === 'val') || args.find(a => a.type === 'number');
+    const lines = [];
+
+    if (valArg) {
+      const val = this.argValueToSwift(valArg.type === 'named' ? valArg.value : valArg);
+      lines.push(`${this.pad()}ProgressView(value: ${val})`);
+    } else {
+      lines.push(`${this.pad()}ProgressView()`);
+    }
+    lines.push(`${this.pad()}.progressViewStyle(.circular)`);
+
     for (const mod of modifiers) {
       lines.push(`${this.pad()}${this.expandModifier(mod)}`);
     }

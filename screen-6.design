@@ -1,0 +1,103 @@
+ZS {
+  LG(#1A1A2E, #2D2B55, dir:.up).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      VS(sp:2, al:.leading) {
+        T("SCORE").caption.bold.fg(.white.opacity(0.5))
+        T("12,450").f(22).bold.fg(.white)
+      }
+      Spacer
+      VS(sp:2, al:.trailing) {
+        T("BEST").caption.bold.fg(.white.opacity(0.5))
+        T("34,200").f(16).semibold.fg(#FFD700)
+      }
+    }
+    ZS {
+      VS(sp:0) {
+        Spacer
+        HS { Spacer T("< < <").tracking(4).f(10).fg(.white.opacity(0.15)) Spacer }.py(40)
+        HS { T("> > >").tracking(4).f(10).fg(.white.opacity(0.1)) Spacer }.py(60)
+        HS { Spacer T("< < <").tracking(4).f(10).fg(.white.opacity(0.08)) }.py(30)
+        Spacer
+      }
+      VS(sp:0) {
+        Spacer
+        HS {
+          Spacer
+          Rect.fg(#4ECDC4).frame(w:70,h:14).r(7)
+          Spacer
+          Spacer
+        }.offset(x:0,y:-180)
+        HS {
+          Spacer
+          Spacer
+          Rect.fg(#FF6B35).frame(w:60,h:14).r(7)
+          Spacer
+        }.offset(x:0,y:-120)
+        HS {
+          Rect.fg(#4ECDC4).frame(w:70,h:14).r(7)
+          Spacer
+          Spacer
+        }.offset(x:0,y:-60).px(32)
+        ZS(al:.center) {
+          VS(sp:2, al:.center) {
+            ZS {
+              Circle.fg(#FFD700).frame(w:40,h:40)
+              T("^_^").f(14).bold.fg(#1A1A2E)
+            }
+            Rect.fg(#4ECDC4).frame(w:10,h:16).r(3)
+            HS(sp:4) {
+              Rect.fg(#FFD700).frame(w:12,h:6).r(3)
+              Rect.fg(#FFD700).frame(w:12,h:6).r(3)
+            }
+          }
+        }.offset(x:0,y:-30)
+        HS {
+          Spacer
+          Rect.fg(#4ECDC4).frame(w:70,h:14).r(7)
+          Spacer
+          Spacer
+        }.offset(x:0,y:20)
+        HS {
+          Spacer
+          Spacer
+          Spacer
+          Rect.fg(#7B68EE).frame(w:65,h:14).r(7)
+        }.offset(x:0,y:80).px(24)
+        HS {
+          Rect.fg(#FF6B35).frame(w:60,h:14).r(7)
+          Spacer
+          Spacer
+        }.offset(x:0,y:140).px(48)
+        HS {
+          Spacer
+          Rect.fg(#4ECDC4).frame(w:70,h:14).r(7)
+          Spacer
+        }.offset(x:0,y:200)
+        Spacer
+      }
+      VS(sp:0) {
+        Spacer
+        HS {
+          Spacer
+          ZS {
+            Circle.fg(.white.opacity(0.15)).frame(w:28,h:28)
+            Img(sys:"arrow.up").f(12).bold.fg(.white)
+          }.offset(x:0,y:-200)
+          Spacer
+          Spacer
+        }
+        HS {
+          Spacer
+          Spacer
+          ZS {
+            Circle.fg(.red.opacity(0.8)).frame(w:30,h:30)
+            T("X").f(14).bold.fg(.white)
+          }.offset(x:0,y:-50)
+          Spacer
+        }
+        Spacer
+      }
+    }
+  }
+}

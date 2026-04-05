@@ -151,7 +151,7 @@ class Parser {
 
   // Check if the current tag supports presets
   isPresetContext(tag) {
-    const presetTags = ['B', 'V', 'TF', 'Nav', 'Tab', 'Img'];
+    const presetTags = ['B', 'V', 'TF', 'Nav', 'Tab', 'Img', 'ProgressView', 'Bar'];
     return presetTags.includes(tag);
   }
 
@@ -205,10 +205,18 @@ class Parser {
       return { type: 'number', value: tok.value };
     }
 
-    // Hex color: #FF6600
+    // Hex color: #FF6600 or with chaining: #FF6600.opacity(0.8)
     if (tok.type === TokenType.HEX_COLOR) {
       this.advance();
-      return { type: 'hex', value: tok.value };
+      const hex = tok.value;
+
+      // Check for chained calls: #FF6600.opacity(0.8)
+      if (this.current().type === TokenType.DOT && this.peek(1).type === TokenType.IDENT) {
+        let chain = this.parseChainedCalls();
+        return { type: 'hexExpr', hex, chain };
+      }
+
+      return { type: 'hex', value: hex };
     }
 
     // Enum or chained expression starting with dot: .blue, .white.opacity(0.8)
@@ -297,6 +305,7 @@ class Parser {
     if (arg.type === 'enum') return arg.value;
     if (arg.type === 'ident') return arg.value;
     if (arg.type === 'expr') return arg.value;
+    if (arg.type === 'hexExpr') return `Color(hex: 0x${arg.hex})${arg.chain}`;
     if (arg.type === 'named') return `${arg.key}: ${this.serializeArg(arg.value)}`;
     return String(arg.value || '');
   }

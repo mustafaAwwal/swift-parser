@@ -1,0 +1,82 @@
+VS(sp:0) {
+  HS(px:20, py:12) {
+    Img(sys:"arrow.left").f(18)
+    Spacer
+    T("Book a Flight").headline.bold
+    Spacer
+    Menu("More", sys:"ellipsis.circle") {
+      B("My Bookings", sys:"list.bullet.rectangle")
+      B("Saved Flights", sys:"heart")
+      Div
+      B("Help Center", sys:"questionmark.circle")
+    }
+  }
+  Scroll {
+    VS(sp:24, al:.leading, px:20, pt:12, pb:32) {
+      VS(sp:8, al:.leading) {
+        T("Route").subheadline.bold.fg(.secondary)
+        HS(sp:12, p:16) {
+          Img(sys:"airplane.departure").ico(#4ECDC4, size:36)
+          VS(sp:2, al:.leading) {
+            T("From").caption.fg(.secondary)
+            T("San Francisco (SFO)").subheadline.bold
+          }
+        }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+        HS(sp:12, p:16) {
+          Img(sys:"airplane.arrival").ico(#E5625E, size:36)
+          VS(sp:2, al:.leading) {
+            T("To").caption.fg(.secondary)
+            T("Tokyo Narita (NRT)").subheadline.bold
+          }
+        }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+      }
+      VS(sp:8, al:.leading) {
+        T("Trip Type").subheadline.bold.fg(.secondary)
+        Seg("One Way", "Round Trip", "Multi-City", active:1)
+      }
+      VS(sp:8, al:.leading) {
+        T("Dates").subheadline.bold.fg(.secondary)
+        HS(sp:12) {
+          VS(sp:4, al:.leading, p:14) {
+            T("Departure").caption.fg(.secondary)
+            DatePicker("", style:.compact)
+          }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+          VS(sp:4, al:.leading, p:14) {
+            T("Return").caption.fg(.secondary)
+            DatePicker("", style:.compact)
+          }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+        }
+      }
+      VS(sp:8, al:.leading) {
+        T("Passengers").subheadline.bold.fg(.secondary)
+        HS { T("Adults").subheadline Spacer T("2").subheadline.bold Stepper("", val:2, min:1, max:9).frame(w:100) }
+        HS { T("Children").subheadline Spacer T("1").subheadline.bold Stepper("", val:1, min:0, max:9).frame(w:100) }
+        HS { T("Infants").subheadline Spacer T("0").subheadline.bold Stepper("", val:0, min:0, max:4).frame(w:100) }
+      }
+      VS(sp:8, al:.leading) {
+        T("Preferences").subheadline.bold.fg(.secondary)
+        Toggle("Direct flights only", on:true)
+        Toggle("Flexible dates (+/- 3 days)", on:false)
+        Toggle("Include nearby airports", on:false)
+      }
+      VS(sp:8, al:.leading) {
+        HS {
+          T("Max Price").subheadline.bold.fg(.secondary)
+          Spacer
+          T("$2,400").subheadline.bold.fg(#4ECDC4)
+        }
+        Slider(val:2400, min:200, max:5000).tint(#4ECDC4)
+        HS {
+          T("$200").caption.fg(.secondary)
+          Spacer
+          T("$5,000").caption.fg(.secondary)
+        }
+      }
+      VS(sp:8, al:.center) {
+        ProgressView(0.8)
+        T("80% of flights match your criteria").caption.fg(.secondary)
+      }
+      T("Search Flights").bold.fg(.white).f(17).frame(maxW:.inf).py(16).bg(#4ECDC4).r(12)
+    }
+  }
+}

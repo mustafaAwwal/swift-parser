@@ -1,0 +1,162 @@
+ZS {
+  Rect.fg(#121212).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:16, py:12) {
+      T("Good evening").title2.bold.fg(.white)
+      Spacer
+      HS(sp:16) {
+        Img(sys:"bell").f(20).fg(.white)
+        Img(sys:"clock.arrow.circlepath").f(20).fg(.white)
+        Img(sys:"gearshape").f(20).fg(.white)
+      }
+    }
+    Scroll {
+      VS(sp:24, al:.leading, px:16, pt:8, pb:120) {
+        VS(sp:8) {
+          HS(sp:8) {
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#1DB954).frame(w:48,h:48).r(4)
+                T("Liked Songs").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#4ECDC4).frame(w:48,h:48).r(4)
+                T("Daily Mix 1").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+          }
+          HS(sp:8) {
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#E5625E).frame(w:48,h:48).r(4)
+                T("Discover Weekly").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#6C5CE7).frame(w:48,h:48).r(4)
+                T("Release Radar").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+          }
+          HS(sp:8) {
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#FF9500).frame(w:48,h:48).r(4)
+                T("Chill Vibes").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+            ZS(al:.leading) {
+              Rect.fg(#282828).frame(h:48).r(4)
+              HS(sp:0) {
+                Rect.fg(#FFD700).frame(w:48,h:48).r(4)
+                T("Road Trip").caption.bold.fg(.white).lineLimit(1).px(10)
+              }
+            }.frame(maxW:.inf)
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("Recently Played").headline.bold.fg(.white)
+          Scroll(.horizontal) {
+            HS(sp:12, al:.top) {
+              VS(sp:8, al:.leading) {
+                Rect.fg(#1DB954).frame(w:140,h:140).r(8)
+                T("Today's Top Hits").subheadline.bold.fg(.white).lineLimit(1)
+                T("The biggest songs right now").caption.fg(.white.opacity(0.5)).lineLimit(2)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#E5625E).frame(w:140,h:140).r(8)
+                T("RapCaviar").subheadline.bold.fg(.white).lineLimit(1)
+                T("New music from Drake, Kendrick").caption.fg(.white.opacity(0.5)).lineLimit(2)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#6C5CE7).frame(w:140,h:140).r(8)
+                T("Lofi Beats").subheadline.bold.fg(.white).lineLimit(1)
+                T("Beats to relax and study to").caption.fg(.white.opacity(0.5)).lineLimit(2)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#4ECDC4).frame(w:140,h:140).r(8)
+                T("Indie Pop").subheadline.bold.fg(.white).lineLimit(1)
+                T("The best new indie").caption.fg(.white.opacity(0.5)).lineLimit(2)
+              }.frame(w:140)
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("Made for You").headline.bold.fg(.white)
+          Scroll(.horizontal) {
+            HS(sp:12, al:.top) {
+              VS(sp:8, al:.center) {
+                Circle.fg(#282828).frame(w:140,h:140)
+                T("Daily Mix 1").subheadline.bold.fg(.white).lineLimit(1)
+                T("Drake, Travis Scott, Future").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.center) {
+                Circle.fg(#282828).frame(w:140,h:140)
+                T("Daily Mix 2").subheadline.bold.fg(.white).lineLimit(1)
+                T("The Weeknd, Doja Cat").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.center) {
+                Circle.fg(#282828).frame(w:140,h:140)
+                T("Daily Mix 3").subheadline.bold.fg(.white).lineLimit(1)
+                T("Radiohead, Tame Impala").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.center) {
+                Circle.fg(#282828).frame(w:140,h:140)
+                T("Daily Mix 4").subheadline.bold.fg(.white).lineLimit(1)
+                T("Bonobo, Tycho, Khruangbin").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("Popular Albums").headline.bold.fg(.white)
+          Scroll(.horizontal) {
+            HS(sp:12, al:.top) {
+              VS(sp:8, al:.leading) {
+                Rect.fg(#333333).frame(w:140,h:140).r(8)
+                T("Midnights").subheadline.bold.fg(.white).lineLimit(1)
+                T("Taylor Swift").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#333333).frame(w:140,h:140).r(8)
+                T("SOS").subheadline.bold.fg(.white).lineLimit(1)
+                T("SZA").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#333333).frame(w:140,h:140).r(8)
+                T("Utopia").subheadline.bold.fg(.white).lineLimit(1)
+                T("Travis Scott").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+              VS(sp:8, al:.leading) {
+                Rect.fg(#333333).frame(w:140,h:140).r(8)
+                T("1989 (TV)").subheadline.bold.fg(.white).lineLimit(1)
+                T("Taylor Swift").caption.fg(.white.opacity(0.5)).lineLimit(1)
+              }.frame(w:140)
+            }
+          }
+        }
+      }
+    }
+    ZS {
+      Rect.fg(#1DB954).frame(h:56).r(8).px(8)
+      HS(sp:12, px:20) {
+        Rect.fg(#282828).frame(w:40,h:40).r(4)
+        VS(sp:2, al:.leading) {
+          T("Blinding Lights").caption.bold.fg(.white)
+          T("The Weeknd").caption.fg(.white.opacity(0.7))
+        }
+        Spacer
+        Img(sys:"speaker.wave.2.fill").f(14).fg(.white.opacity(0.7))
+        Img(sys:"pause.fill").f(18).fg(.white)
+      }
+    }.pb(8)
+  }
+}

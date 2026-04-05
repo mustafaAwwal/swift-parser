@@ -1,0 +1,77 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:12) {
+      Img(sys:"xmark").f(18).fg(.white.opacity(0.5))
+      Spacer
+      VS(sp:2, al:.center) {
+        T("The Psychology of Money").caption.bold.fg(.white.opacity(0.5))
+        T("Chapter 3 — Luck & Risk").caption.fg(.white.opacity(0.3))
+      }
+      Spacer
+      HS(sp:4) {
+        T("420").caption.bold.fg(#4ECDC4)
+        T("wpm").caption.fg(.white.opacity(0.3))
+      }
+    }
+    ZS(al:.leading) {
+      Rect.fg(.white.opacity(0.06)).frame(h:4).r(2)
+      Rect.fg(#4ECDC4).frame(w:140,h:4).r(2)
+    }.px(20)
+    Spacer
+    VS(sp:0, al:.center) {
+      T("that sometimes").f(20).fg(.white.opacity(0.15)).blur(2)
+      T("what looks like").f(20).fg(.white.opacity(0.25)).blur(1).py(8)
+      VS(sp:8, al:.center, py:24) {
+        HS(sp:0) {
+          T("rema").f(44).bold.fg(.white)
+          T("r").f(44).bold.fg(#4ECDC4)
+          T("kable").f(44).bold.fg(.white)
+        }
+        Rect.fg(#4ECDC4).frame(w:50,h:3).r(2)
+      }.scaleEffect(1.05)
+      T("skill is often").f(20).fg(.white.opacity(0.25)).blur(1).py(8)
+      T("luck and what").f(20).fg(.white.opacity(0.15)).blur(2)
+    }
+    Spacer
+    VS(sp:20, al:.center, px:20, pb:32) {
+      HS(sp:20) {
+        VS(sp:2, al:.center) {
+          T("3:42").f(18).semibold.fg(.white.opacity(0.6))
+          T("elapsed").caption.fg(.white.opacity(0.3))
+        }
+        VS(sp:2, al:.center) {
+          T("1,247").f(18).semibold.fg(.white.opacity(0.6))
+          T("words").caption.fg(.white.opacity(0.3))
+        }
+        VS(sp:2, al:.center) {
+          T("6:18").f(18).semibold.fg(.white.opacity(0.6))
+          T("remaining").caption.fg(.white.opacity(0.3))
+        }
+      }
+      HS(sp:4) {
+        T("120").caption.fg(.white.opacity(0.2))
+        ZS(al:.leading) {
+          Rect.fg(.white.opacity(0.06)).frame(h:4).r(2)
+          Rect.fg(#4ECDC4).frame(w:120,h:4).r(2)
+          Circle.fg(#4ECDC4).frame(w:16,h:16).offset(x:112,y:0)
+        }
+        T("800").caption.fg(.white.opacity(0.2))
+      }
+      HS(sp:32) {
+        ZS {
+          Circle.fg(.white.opacity(0.06)).frame(w:52,h:52)
+          Img(sys:"backward.fill").f(16).fg(.white.opacity(0.5))
+        }
+        ZS {
+          Circle.fg(#4ECDC4).frame(w:68,h:68)
+          Img(sys:"pause.fill").f(22).fg(#0F0F0F)
+        }
+        ZS {
+          Circle.fg(.white.opacity(0.06)).frame(w:52,h:52)
+          Img(sys:"forward.fill").f(16).fg(.white.opacity(0.5))
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+ZS {
+  LG(#1B0A2E, #0F4C3A, dir:.down).ignoresSafeArea
+  VS(sp:0) {
+    Spacer
+    VS(sp:24, al:.center, px:32) {
+      ZS {
+        Circle.fg(.white.opacity(0.08)).frame(w:180,h:180)
+        Circle.fg(.white.opacity(0.06)).frame(w:140,h:140)
+        Circle.stroke(.white.opacity(0.15), w:1).frame(w:220,h:220)
+        VS(sp:4, al:.center) {
+          Img(sys:"flame.fill").f(52).fg(LG(#FF6B35, #FFD23F, dir:.up))
+          T("1,847").f(28).bold.fg(.white)
+          T("kcal").caption.fg(.white.opacity(0.6))
+        }
+      }
+      VS(sp:8, al:.center) {
+        T("NutriTrack").f(34).bold.fg(.white)
+        T("Effortless calorie tracking.\nSmarter choices, every meal.").multiline(.center).callout.fg(.white.opacity(0.7))
+      }
+    }
+    Spacer
+    VS(sp:16, al:.leading, px:32) {
+      HS(sp:16) {
+        ZS {
+          Circle.fg(#FF6B3533).frame(w:44,h:44)
+          Img(sys:"camera.fill").f(18).fg(#FF6B35)
+        }
+        VS(sp:2, al:.leading) {
+          T("Snap & Log").semibold.fg(.white)
+          T("Photo-powered food recognition").caption.fg(.white.opacity(0.5))
+        }
+      }
+      HS(sp:16) {
+        ZS {
+          Circle.fg(#4ECDC433).frame(w:44,h:44)
+          Img(sys:"chart.bar.fill").f(18).fg(#4ECDC4)
+        }
+        VS(sp:2, al:.leading) {
+          T("Smart Insights").semibold.fg(.white)
+          T("Weekly trends and macro breakdowns").caption.fg(.white.opacity(0.5))
+        }
+      }
+      HS(sp:16) {
+        ZS {
+          Circle.fg(#FFD23F33).frame(w:44,h:44)
+          Img(sys:"trophy.fill").f(18).fg(#FFD23F)
+        }
+        VS(sp:2, al:.leading) {
+          T("Daily Goals").semibold.fg(.white)
+          T("Stay on track with personalized targets").caption.fg(.white.opacity(0.5))
+        }
+      }
+    }
+    Spacer
+    VS(sp:12, al:.center, px:32, pb:24) {
+      T("Get Started").bold.fg(.white).f(17).frame(maxW:.inf).py(16).bg(LG(#4ECDC4, #44B8A8, dir:.right)).r(12)
+      T("Already have an account? Sign In").caption.fg(.white.opacity(0.5))
+    }
+  }
+}

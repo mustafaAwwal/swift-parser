@@ -1,0 +1,157 @@
+Tab(tint:#4ECDC4, active:0) {
+  Tab.item("Home", sys:"house.fill") {
+    VS(sp:0) {
+      HS(px:20, py:12) {
+        VS(sp:2, al:.leading) {
+          T("Good morning").subheadline.fg(.secondary)
+          T("Alex").title2.bold
+        }
+        Spacer
+        ZS {
+          Circle.fg(.gray.opacity(0.12)).frame(w:40,h:40)
+          Img(sys:"bell.fill").f(16).fg(.primary)
+        }
+      }
+      Scroll {
+        VS(sp:20, al:.leading, px:20, pt:12, pb:32) {
+          HS(sp:10) {
+            VS(sp:6, al:.leading, p:14) {
+              ZS {
+                Circle.fg(#4ECDC4.opacity(0.15)).frame(w:32,h:32)
+                Img(sys:"car.fill").f(14).fg(#4ECDC4)
+              }
+              T("12").f(24).bold
+              T("Active").caption.fg(.secondary)
+            }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+            VS(sp:6, al:.leading, p:14) {
+              ZS {
+                Circle.fg(#FF9500.opacity(0.15)).frame(w:32,h:32)
+                Img(sys:"eye.fill").f(14).fg(#FF9500)
+              }
+              T("3.4k").f(24).bold
+              T("Views").caption.fg(.secondary)
+            }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+            VS(sp:6, al:.leading, p:14) {
+              ZS {
+                Circle.fg(#E5625E.opacity(0.15)).frame(w:32,h:32)
+                Img(sys:"heart.fill").f(14).fg(#E5625E)
+              }
+              T("28").f(24).bold
+              T("Saved").caption.fg(.secondary)
+            }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+            VS(sp:6, al:.leading, p:14) {
+              ZS {
+                Circle.fg(#6C5CE7.opacity(0.15)).frame(w:32,h:32)
+                Img(sys:"bubble.left.fill").f(14).fg(#6C5CE7)
+              }
+              T("5").f(24).bold
+              T("Offers").caption.fg(.secondary)
+            }.frame(maxW:.inf).bg(#F5F5F7).r(12)
+          }
+          VS(sp:12, al:.leading) {
+            HS {
+              T("Your Listings").headline.bold
+              Spacer
+              T("See All").subheadline.semibold.fg(#4ECDC4)
+            }
+            VS(sp:4, al:.leading) {
+              ZS(al:.bottomLeading) {
+                Rect.fg(#E8E8ED).frame(h:170).r(12)
+                Img(sys:"car.side.fill").f(48).fg(#C7C7CC).frame(maxW:.inf).frame(h:170)
+                V.badge("ACTIVE").fg(#34C759).offset(x:12,y:-12)
+              }
+              HS(px:4, py:6) {
+                VS(sp:2, al:.leading) {
+                  T("2021 BMW M3 Competition").subheadline.bold
+                  T("$52,900").f(18).bold.fg(#4ECDC4)
+                }
+                Spacer
+                VS(sp:4, al:.trailing) {
+                  HS(sp:3) {
+                    Img(sys:"eye.fill").f(10).fg(.secondary)
+                    T("847").caption.bold.fg(.secondary)
+                  }
+                  HS(sp:3) {
+                    Img(sys:"heart.fill").f(10).fg(#E5625E)
+                    T("23").caption.bold.fg(.secondary)
+                  }
+                }
+              }
+            }
+            VS(sp:4, al:.leading) {
+              ZS(al:.bottomLeading) {
+                Rect.fg(#E8E8ED).frame(h:170).r(12)
+                Img(sys:"suv.side.fill").f(48).fg(#C7C7CC).frame(maxW:.inf).frame(h:170)
+                V.badge("2 OFFERS").fg(#FF9500).offset(x:12,y:-12)
+              }
+              HS(px:4, py:6) {
+                VS(sp:2, al:.leading) {
+                  T("2023 Mercedes GLE 450").subheadline.bold
+                  T("$68,500").f(18).bold.fg(#4ECDC4)
+                }
+                Spacer
+                VS(sp:4, al:.trailing) {
+                  HS(sp:3) {
+                    Img(sys:"eye.fill").f(10).fg(.secondary)
+                    T("1.2k").caption.bold.fg(.secondary)
+                  }
+                  HS(sp:3) {
+                    Img(sys:"heart.fill").f(10).fg(#E5625E)
+                    T("41").caption.bold.fg(.secondary)
+                  }
+                }
+              }
+            }
+          }
+          VS(sp:12, al:.leading) {
+            HS {
+              T("Recent Offers").headline.bold
+              Spacer
+              T("See All").subheadline.semibold.fg(#4ECDC4)
+            }
+            HS(sp:12, p:14) {
+              ZS {
+                Circle.fg(#4ECDC4.opacity(0.15)).frame(w:40,h:40)
+                Img(sys:"person.fill").f(16).fg(#4ECDC4)
+              }
+              VS(sp:2, al:.leading) {
+                T("James offered $50,200").subheadline.semibold
+                T("BMW M3 Competition").caption.fg(.secondary)
+              }
+              Spacer
+              T("2h").caption.bold.fg(.secondary)
+            }.bg(#F5F5F7).r(12)
+            HS(sp:12, p:14) {
+              ZS {
+                Circle.fg(#E5625E.opacity(0.15)).frame(w:40,h:40)
+                Img(sys:"person.fill").f(16).fg(#E5625E)
+              }
+              VS(sp:2, al:.leading) {
+                T("Sarah offered $65,000").subheadline.semibold
+                T("Mercedes GLE 450").caption.fg(.secondary)
+              }
+              Spacer
+              T("5h").caption.bold.fg(.secondary)
+            }.bg(#F5F5F7).r(12)
+            HS(sp:12, p:14) {
+              ZS {
+                Circle.fg(#FF9500.opacity(0.15)).frame(w:40,h:40)
+                Img(sys:"person.fill").f(16).fg(#FF9500)
+              }
+              VS(sp:2, al:.leading) {
+                T("Mike offered $67,800").subheadline.semibold
+                T("Mercedes GLE 450").caption.fg(.secondary)
+              }
+              Spacer
+              T("1d").caption.bold.fg(.secondary)
+            }.bg(#F5F5F7).r(12)
+          }
+        }
+      }
+    }
+  }
+  Tab.item("Search", sys:"magnifyingglass")
+  Tab.item("Sell", sys:"plus.circle.fill")
+  Tab.item("Messages", sys:"bubble.left.fill")
+  Tab.item("Profile", sys:"person.fill")
+}
