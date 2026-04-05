@@ -14,7 +14,8 @@ extension Color {
 // MARK: - Button Modifiers
 
 extension View {
-    /// Text-only button: plain style
+    /// Text-only button: no chrome
+    @available(iOS 26.0, *)
     func btnText() -> some View {
         self.buttonStyle(.plain)
     }

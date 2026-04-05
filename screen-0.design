@@ -1,0 +1,7 @@
+ZS {
+  LG(#7B2FBE, #3A0F7A, dir:.down).ignoresSafeArea
+  HS(sp:12) {
+    Img(sys:"leaf.fill").f(28).fg(.white)
+    T("Welcome").f(28).bold.fg(.white)
+  }.px(32).py(14).border(.white.opacity(0.6), w:1.5, r:Capsule)
+}

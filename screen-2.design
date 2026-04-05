@@ -1,0 +1,17 @@
+ZS {
+  Rect.fg(#7B2FBE).ignoresSafeArea
+  VS(al:.center, p:24) {
+    Spacer
+    VS(sp:16, al:.center) {
+      Img(sys:"bell.badge.fill").f(48).fg(.white)
+      T("HUNGRY FOR\nUPDATES?").f(34).bold.fg(.white).multiline(.center)
+      T("Turn on notifications to stay informed about exclusive Taco Bell offers, events, and new menu items.").fg(.white.opacity(0.9)).multiline(.center).callout
+    }
+    VS(sp:12) {
+      B.text("OK, LET'S GO").bold.fg(.white).f(15).frame(maxW:.inf).py(16).bg(#520080)
+      B.text("NOT NOW").bold.fg(.black).f(15).frame(maxW:.inf).py(16).bg(.white)
+    }.px(24).pt(24)
+    Spacer
+    T("Taco Bell will use notifications to facilitate mobile orders and to send you local deals, rewards, and news as described in our Privacy Statement and US Privacy Notice.").fg(#520080).caption.multiline(.center)
+  }
+}

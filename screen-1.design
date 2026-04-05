@@ -1,0 +1,14 @@
+ZS {
+  Rect.fg(#7B2FBE).ignoresSafeArea
+  VS(al:.center, p:24) {
+    Spacer
+    VS(sp:16, al:.center) {
+      Img(sys:"mappin.circle.fill").f(48).fg(.white)
+      T("DROP YOUR\nLOCATION").f(34).bold.fg(.white).multiline(.center)
+      T("We'll hook you up with accurate pricing and show you what's available nearby.").fg(.white.opacity(0.9)).multiline(.center).callout
+    }
+    B.text("MAKE YOUR CHOICE").bold.fg(.white).f(15).px(40).py(18).bg(#520080).pt(24)
+    Spacer
+    T("Taco Bell will use your location to find nearby restaurants, to update pricing with local restaurant menus and availability, to facilitate mobile orders and checking in to your Loyalty account at restaurants, send local deals, news and rewards, and to personalize and localize your experience as described in our Privacy Statement and US Privacy Notice. Location services are required for some features of this App, but you will be otherwise able to use this App with location services disabled.").fg(.black.opacity(0.8)).caption.multiline(.center)
+  }
+}
