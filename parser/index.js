@@ -4,7 +4,7 @@ const { Tokenizer } = require('./tokenizer');
 const { Parser } = require('./parser');
 const { Generator } = require('./generator');
 
-function compile(input) {
+function compile(input, viewName) {
   const tokenizer = new Tokenizer(input);
   const tokens = tokenizer.tokenize();
 
@@ -12,7 +12,7 @@ function compile(input) {
   const ast = parser.parse();
 
   const generator = new Generator();
-  return generator.generate(ast);
+  return generator.generate(ast, viewName);
 }
 
 // CLI usage: node parser/index.js <input.design> [output.swift]

@@ -1,1 +1,4 @@
 sample-images
+node_modules/
+agent-output/
+package-lock.json

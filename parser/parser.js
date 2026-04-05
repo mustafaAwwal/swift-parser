@@ -113,6 +113,21 @@ class Parser {
       this.expect(TokenType.RBRACE);
     }
 
+    // Modifiers AFTER children: HS { ... }.p(20).bg(.red)
+    while (this.current().type === TokenType.DOT) {
+      if (this.peek(1).type === TokenType.IDENT) {
+        this.advance(); // skip dot
+        const modName = this.advance().value;
+        let modArgs = [];
+        if (this.current().type === TokenType.LPAREN) {
+          modArgs = this.parseArgs();
+        }
+        modifiers.push({ name: modName, args: modArgs });
+      } else {
+        break;
+      }
+    }
+
     // Optional repetition: * NUMBER
     let repeat = 1;
     if (this.current().type === TokenType.STAR) {
@@ -186,20 +201,90 @@ class Parser {
       return { type: 'number', value: tok.value };
     }
 
-    // Enum value: .ident
+    // Enum value: .ident — may be followed by chained calls like .white.opacity(0.8)
     if (tok.type === TokenType.DOT && this.peek(1).type === TokenType.IDENT) {
-      this.advance(); // skip dot
-      const ident = this.advance().value;
-      return { type: 'enum', value: `.${ident}` };
+      const raw = this.parseRawExpression();
+      // Check if it's a simple enum or a complex expression
+      if (raw.match(/^\.[a-zA-Z_]+$/) ) {
+        if (raw === '.inf') return { type: 'enum', value: '.infinity' };
+        return { type: 'enum', value: raw };
+      }
+      return { type: 'raw', value: raw };
     }
 
-    // Plain identifier (used as value)
+    // Identifier possibly followed by ( ) — e.g. RoundedRectangle(cornerRadius:12)
     if (tok.type === TokenType.IDENT) {
+      // Check if this is a complex expression (ident followed by parens or dots)
+      if (this.peek(1).type === TokenType.LPAREN || this.peek(1).type === TokenType.DOT) {
+        // Could be a complex expression like RoundedRectangle(cornerRadius:40).stroke(...)
+        const raw = this.parseRawExpression();
+        return { type: 'raw', value: raw };
+      }
       this.advance();
       return { type: 'ident', value: tok.value };
     }
 
     this.error('Expected argument value');
+  }
+
+  // Parse a raw expression — collects tokens as a string, handling balanced parens and dot chains.
+  // Stops at COMMA or unbalanced RPAREN (the enclosing arg list boundary).
+  parseRawExpression() {
+    let raw = '';
+    let depth = 0;
+
+    while (this.current().type !== TokenType.EOF) {
+      const t = this.current();
+
+      // Stop at comma or closing paren at depth 0 (end of this argument)
+      if (depth === 0 && (t.type === TokenType.COMMA || t.type === TokenType.RPAREN)) {
+        break;
+      }
+      // Stop at opening brace at depth 0 (start of children block)
+      if (depth === 0 && t.type === TokenType.LBRACE) {
+        break;
+      }
+
+      if (t.type === TokenType.LPAREN) {
+        raw += '(';
+        depth++;
+        this.advance();
+      } else if (t.type === TokenType.RPAREN) {
+        if (depth === 0) break;
+        raw += ')';
+        depth--;
+        this.advance();
+      } else if (t.type === TokenType.DOT) {
+        raw += '.';
+        this.advance();
+      } else if (t.type === TokenType.COLON) {
+        raw += ': ';
+        this.advance();
+      } else if (t.type === TokenType.COMMA) {
+        if (depth === 0) break;
+        raw += ', ';
+        this.advance();
+      } else if (t.type === TokenType.STRING) {
+        raw += `"${t.value}"`;
+        this.advance();
+      } else if (t.type === TokenType.NUMBER) {
+        raw += String(t.value);
+        this.advance();
+      } else if (t.type === TokenType.IDENT) {
+        raw += t.value;
+        this.advance();
+      } else if (t.type === TokenType.STAR) {
+        // Stop — this is repetition operator at top level
+        if (depth === 0) break;
+        raw += '*';
+        this.advance();
+      } else {
+        // Unknown token — stop
+        break;
+      }
+    }
+
+    return raw;
   }
 
   // Parse: ["a","b","c"].map(V.badge)

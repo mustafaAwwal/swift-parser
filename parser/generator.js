@@ -16,6 +16,10 @@ const TAG_MAP = {
   List: 'List',
   Nav: 'NavigationStack',
   Tab: 'TabView',
+  Rect: 'Rectangle',
+  Circle: 'Circle',
+  Capsule: 'Capsule',
+  Color: 'Color',
 };
 
 // Modifiers that map to .font(.<name>)
@@ -57,22 +61,22 @@ class Generator {
     this.indent = 2;
   }
 
-  generate(ast) {
+  generate(ast, viewName = 'ContentView') {
     const body = this.generateElements(ast);
-    return this.wrapInStruct(body);
+    return this.wrapInStruct(body, viewName);
   }
 
-  wrapInStruct(body) {
+  wrapInStruct(body, viewName = 'ContentView') {
     return `import SwiftUI
 
-struct ContentView: View {
+struct ${viewName}: View {
     var body: some View {
 ${body}
     }
 }
 
 #Preview {
-    ContentView()
+    ${viewName}()
 }
 `;
   }
@@ -102,9 +106,19 @@ ${body}
   generateSingleElement(node) {
     const { tag, preset, args, modifiers, children } = node;
 
-    // Handle Spacer and Divider — no args, no children
+    // Handle simple elements — no args, no children
     if (tag === 'Spacer') return `${this.pad()}Spacer()`;
     if (tag === 'Div') return `${this.pad()}Divider()`;
+
+    // Shapes and simple views with no required args
+    if ((tag === 'Rect' || tag === 'Circle' || tag === 'Capsule') && args.length === 0 && children.length === 0) {
+      const swiftTag = TAG_MAP[tag] || tag;
+      const lines = [`${this.pad()}${swiftTag}()`];
+      for (const mod of modifiers) {
+        lines.push(`${this.pad()}${this.expandModifier(mod)}`);
+      }
+      return lines.join('\n');
+    }
 
     // Handle presets via registry
     const presetDef = this.lookupPreset(tag, preset);
@@ -264,15 +278,16 @@ ${body}
       }
     }
 
-    // Build the opening line
+    // Build the opening line — alignment must precede spacing in SwiftUI
     let opening = swiftTag;
     const paramStrs = [];
-    for (const p of initParams) {
-      if (p.key === 'sp') {
-        paramStrs.push(`spacing: ${this.argValueToSwift(p.value)}`);
-      } else if (p.key === 'al') {
-        paramStrs.push(`alignment: ${this.argValueToSwift(p.value)}`);
-      }
+    const alParam = initParams.find(p => p.key === 'al');
+    const spParam = initParams.find(p => p.key === 'sp');
+    if (alParam) {
+      paramStrs.push(`alignment: ${this.argValueToSwift(alParam.value)}`);
+    }
+    if (spParam) {
+      paramStrs.push(`spacing: ${this.argValueToSwift(spParam.value)}`);
     }
     if (paramStrs.length > 0) {
       opening += `(${paramStrs.join(', ')})`;
@@ -416,6 +431,18 @@ ${body}
     if (name === 'py' && args.length > 0) {
       return `.padding(.vertical, ${this.argValueToSwift(args[0])})`;
     }
+    if (name === 'pt' && args.length > 0) {
+      return `.padding(.top, ${this.argValueToSwift(args[0])})`;
+    }
+    if (name === 'pb' && args.length > 0) {
+      return `.padding(.bottom, ${this.argValueToSwift(args[0])})`;
+    }
+    if (name === 'pl' && args.length > 0) {
+      return `.padding(.leading, ${this.argValueToSwift(args[0])})`;
+    }
+    if (name === 'pr' && args.length > 0) {
+      return `.padding(.trailing, ${this.argValueToSwift(args[0])})`;
+    }
 
     // Corner radius
     if (name === 'r' && args.length > 0) {
@@ -481,6 +508,7 @@ ${body}
       return val.value;
     }
     if (val.type === 'ident') return val.value;
+    if (val.type === 'raw') return val.value;
     return String(val.value || '');
   }
 
