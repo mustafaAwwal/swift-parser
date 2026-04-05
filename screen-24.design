@@ -1,0 +1,48 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Spacer
+      T("Step 9 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+    }
+    ProgressView(0.9).tint(#FF2D55).px(20).pt(4)
+    Spacer
+    VS(sp:32, al:.center, px:32) {
+      ZS {
+        Circle.ringTrack(#FF2D55, w:8).frame(w:160,h:160)
+        Circle.ring(0.72, #FF2D55, w:8).frame(w:160,h:160)
+        VS(sp:4, al:.center) {
+          T("72%").f(36).bold.fg(.white)
+          T("Analyzing").caption.fg(.white.opacity(0.4))
+        }
+      }
+      VS(sp:16, al:.leading) {
+        HS(sp:12) {
+          Img(sys:"checkmark.circle.fill").f(20).fg(#00F2EA)
+          T("Profile scanned").subheadline.fg(.white)
+        }
+        HS(sp:12) {
+          Img(sys:"checkmark.circle.fill").f(20).fg(#00F2EA)
+          T("Content style identified").subheadline.fg(.white)
+        }
+        HS(sp:12) {
+          Img(sys:"checkmark.circle.fill").f(20).fg(#00F2EA)
+          T("Niche competitors analyzed").subheadline.fg(.white)
+        }
+        HS(sp:12) {
+          Img(sys:"ellipsis.circle.fill").f(20).fg(#FF2D55)
+          T("Building your growth plan...").subheadline.fg(.white.opacity(0.5))
+        }
+        HS(sp:12) {
+          Circle.stroke(.white.opacity(0.15), w:1.5).frame(w:20,h:20)
+          T("Scheduling content calendar").subheadline.fg(.white.opacity(0.3))
+        }
+      }.frame(maxW:.inf, al:.leading)
+    }
+    Spacer
+    VS(sp:8, al:.center, px:20, pb:16) {
+      T("This usually takes about 30 seconds").caption.fg(.white.opacity(0.3))
+    }
+  }
+}

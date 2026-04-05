@@ -1,0 +1,89 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Spacer
+      T("Step 10 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+    }
+    ProgressView(1.0).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:20, al:.leading, px:20, pt:20, pb:32) {
+        VS(sp:4, al:.leading) {
+          T("Your Personalized Plan").title2.bold.fg(.white)
+          T("Based on your goals and niche").subheadline.fg(.white.opacity(0.4))
+        }
+        HS(sp:12) {
+          VS(sp:4, al:.center, p:16) {
+            T("30d").f(22).bold.fg(#FF2D55)
+            T("to 10K").caption.fg(.white.opacity(0.5))
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:4, al:.center, p:16) {
+            T("$1.2K").f(22).bold.fg(#00F2EA)
+            T("revenue").caption.fg(.white.opacity(0.5))
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:4, al:.center, p:16) {
+            T("5x").f(22).bold.fg(#FFD700)
+            T("views").caption.fg(.white.opacity(0.5))
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+        }
+        VS(sp:12, al:.leading) {
+          T("Daily Check-In").headline.bold.fg(.white)
+          VS(sp:12, al:.leading, p:16) {
+            HS(sp:12) {
+              Img(sys:"sun.max.fill").f(20).fg(#FFD700)
+              VS(sp:2, al:.leading) {
+                T("Today's Focus").subheadline.bold.fg(.white)
+                T("Film 2 trending sounds with your twist").caption.fg(.white.opacity(0.5))
+              }
+            }
+            Div.bg(.white.opacity(0.06))
+            HS(sp:12) {
+              Img(sys:"clock").f(16).fg(#FF2D55)
+              T("Best time to post: 7:00 PM").caption.fg(.white.opacity(0.5))
+            }
+            HS(sp:12) {
+              Img(sys:"music.note").f(16).fg(#00F2EA)
+              T("Trending sound: \"Espresso\" remix").caption.fg(.white.opacity(0.5))
+            }
+          }.bg(#1C1C1E).r(12)
+        }
+        VS(sp:12, al:.leading) {
+          T("This Week").headline.bold.fg(.white)
+          VS(sp:8) {
+            HS(sp:12, p:14) {
+              T("M").caption.bold.fg(.white).frame(w:28,h:28).bg(#FF2D55).clipShape(Circle)
+              VS(sp:2, al:.leading) {
+                T("Hook mastery").subheadline.bold.fg(.white)
+                T("Nail the first 3 seconds").caption.fg(.white.opacity(0.4))
+              }
+              Spacer
+              Img(sys:"checkmark").f(14).fg(#00F2EA)
+            }.bg(#1C1C1E).r(10)
+            HS(sp:12, p:14) {
+              T("T").caption.bold.fg(.white).frame(w:28,h:28).bg(#FF2D55).clipShape(Circle)
+              VS(sp:2, al:.leading) {
+                T("Trending sounds").subheadline.bold.fg(.white)
+                T("Ride the algorithm wave").caption.fg(.white.opacity(0.4))
+              }
+              Spacer
+              Img(sys:"play.fill").f(12).fg(.white.opacity(0.3))
+            }.bg(#1C1C1E).r(10)
+            HS(sp:12, p:14) {
+              T("W").caption.bold.fg(.white.opacity(0.4)).frame(w:28,h:28).bg(.white.opacity(0.1)).clipShape(Circle)
+              VS(sp:2, al:.leading) {
+                T("Hashtag strategy").subheadline.fg(.white.opacity(0.4))
+                T("Reach the right audience").caption.fg(.white.opacity(0.3))
+              }
+              Spacer
+              Img(sys:"lock.fill").f(12).fg(.white.opacity(0.2))
+            }.bg(#1C1C1E).r(10)
+          }
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Start My Journey").tint(#FF2D55)
+    }
+  }
+}

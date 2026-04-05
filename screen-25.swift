@@ -33,7 +33,7 @@ struct ContentView: View {
                         }
                         HStack(spacing: 12) {
                             VStack(alignment: .center, spacing: 4) {
-                                Text("30d")
+                                Text("30 days")
                                 .font(.system(size: 22))
                                 .fontWeight(.bold)
                                 .foregroundStyle(Color(hex: 0xFF2D55))
@@ -50,7 +50,7 @@ struct ContentView: View {
                                 .font(.system(size: 22))
                                 .fontWeight(.bold)
                                 .foregroundStyle(Color(hex: 0x00F2EA))
-                                Text("revenue")
+                                Text("est. revenue")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.5))
                             }
@@ -63,7 +63,7 @@ struct ContentView: View {
                                 .font(.system(size: 22))
                                 .fontWeight(.bold)
                                 .foregroundStyle(Color(hex: 0xFFD700))
-                                Text("views")
+                                Text("more views")
                                 .font(.caption)
                                 .foregroundStyle(.white.opacity(0.5))
                             }
@@ -77,42 +77,45 @@ struct ContentView: View {
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "sun.max.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(Color(hex: 0xFFD700))
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Today's Focus")
-                                        .font(.subheadline)
-                                        .fontWeight(.bold)
-                                        .foregroundStyle(.white)
-                                        Text("Film 2 trending sounds with your twist")
+                            ZStack {
+                                Rectangle()
+                                .foregroundStyle(Color(hex: 0x1C1C1E))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                VStack(spacing: 12) {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "sun.max.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundStyle(Color(hex: 0xFFD700))
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Today's Focus")
+                                            .font(.subheadline)
+                                            .fontWeight(.bold)
+                                            .foregroundStyle(.white)
+                                            Text("Film 2 trending sounds with your twist")
+                                            .font(.caption)
+                                            .foregroundStyle(.white.opacity(0.5))
+                                        }
+                                    }
+                                    Divider()
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "clock")
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(Color(hex: 0xFF2D55))
+                                        Text("Best time to post: 7:00 PM")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.5))
+                                    }
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "music.note")
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(Color(hex: 0x00F2EA))
+                                        Text("Trending sound: \"Espresso\" remix")
                                         .font(.caption)
                                         .foregroundStyle(.white.opacity(0.5))
                                     }
                                 }
-                                Divider()
-                                HStack(spacing: 12) {
-                                    Image(systemName: "clock")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(Color(hex: 0xFF2D55))
-                                    Text("Best time to post: 7:00 PM")
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.5))
-                                }
-                                HStack(spacing: 12) {
-                                    Image(systemName: "music.note")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(Color(hex: 0x00F2EA))
-                                    Text("Trending sound: \"Espresso\" remix")
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.5))
-                                }
+                                .padding(16)
                             }
-                            .padding(16)
-                            .background(Color(hex: 0x1C1C1E))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         VStack(alignment: .leading, spacing: 12) {
                             Text("This Week")

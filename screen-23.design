@@ -1,0 +1,58 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 8 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.8).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("Upload a TikTok\nfor AI analysis").title.bold.fg(.white)
+          T("We'll analyze your style and give tips").subheadline.fg(.white.opacity(0.4))
+        }
+        ZS {
+          Rect.fg(#1C1C1E).r(16)
+          Rect.stroke(.white.opacity(0.1), w:1).r(16)
+          VS(sp:16, al:.center, py:40) {
+            ZS {
+              Circle.fg(#FF2D55.opacity(0.15)).frame(w:72,h:72)
+              Img(sys:"arrow.up.circle.fill").f(36).fg(#FF2D55)
+            }
+            VS(sp:4, al:.center) {
+              T("Tap to upload").subheadline.bold.fg(.white)
+              T("MP4, MOV up to 3 min").caption.fg(.white.opacity(0.4))
+            }
+          }
+        }
+        VS(sp:12, al:.leading) {
+          T("What we'll analyze").caption.bold.fg(.white.opacity(0.4))
+          HS(sp:12) {
+            Img(sys:"waveform").f(16).fg(#00F2EA)
+            T("Hook strength (first 3 sec)").subheadline.fg(.white)
+          }
+          HS(sp:12) {
+            Img(sys:"text.alignleft").f(16).fg(#00F2EA)
+            T("Caption & hashtag quality").subheadline.fg(.white)
+          }
+          HS(sp:12) {
+            Img(sys:"music.note").f(16).fg(#00F2EA)
+            T("Sound & trend alignment").subheadline.fg(.white)
+          }
+          HS(sp:12) {
+            Img(sys:"clock").f(16).fg(#00F2EA)
+            T("Posting time optimization").subheadline.fg(.white)
+          }
+        }
+        T("Skip for now").subheadline.fg(.white.opacity(0.4)).frame(maxW:.inf, al:.center)
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Upload Video").tint(#FF2D55)
+    }
+  }
+}

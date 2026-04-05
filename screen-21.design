@@ -1,0 +1,66 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 6 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.6).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("How often do\nyou post?").title.bold.fg(.white)
+          T("Be honest — we won't judge").subheadline.fg(.white.opacity(0.4))
+        }
+        VS(sp:12) {
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Every day").subheadline.bold.fg(.white)
+              T("Consistent machine").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"flame.fill").f(20).fg(#FF2D55)
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("3–5 times a week").subheadline.bold.fg(.white)
+              T("Solid rhythm").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"checkmark.seal.fill").f(20).fg(#00F2EA)
+          }.bg(#00F2EA.opacity(0.15)).r(12).border(#00F2EA, w:1, r:12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("1–2 times a week").subheadline.bold.fg(.white)
+              T("Getting there").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"hand.thumbsup.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("A few times a month").subheadline.bold.fg(.white)
+              T("Room to grow").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"tortoise.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Rarely").subheadline.bold.fg(.white)
+              T("We'll fix that").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"moon.zzz.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Continue").tint(#FF2D55)
+    }
+  }
+}

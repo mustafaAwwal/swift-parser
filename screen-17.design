@@ -1,0 +1,56 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 2 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.2).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("What do you want\nto achieve?").title.bold.fg(.white)
+          T("Select all that apply").subheadline.fg(.white.opacity(0.4))
+        }
+        VS(sp:12) {
+          HS(sp:14, p:16) {
+            Img(sys:"person.3.fill").f(20).fg(#FF2D55)
+            T("Grow my followers").subheadline.fg(.white)
+            Spacer
+            Img(sys:"checkmark.circle.fill").f(22).fg(#FF2D55)
+          }.bg(#FF2D55.opacity(0.15)).r(12).border(#FF2D55, w:1, r:12)
+          HS(sp:14, p:16) {
+            Img(sys:"dollarsign.circle.fill").f(20).fg(#00F2EA)
+            T("Make money from content").subheadline.fg(.white)
+            Spacer
+            Img(sys:"checkmark.circle.fill").f(22).fg(#00F2EA)
+          }.bg(#00F2EA.opacity(0.15)).r(12).border(#00F2EA, w:1, r:12)
+          HS(sp:14, p:16) {
+            Img(sys:"bolt.fill").f(20).fg(.white.opacity(0.4))
+            T("Go viral").subheadline.fg(.white)
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+          HS(sp:14, p:16) {
+            Img(sys:"briefcase.fill").f(20).fg(.white.opacity(0.4))
+            T("Get brand deals").subheadline.fg(.white)
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+          HS(sp:14, p:16) {
+            Img(sys:"heart.fill").f(20).fg(.white.opacity(0.4))
+            T("Build a community").subheadline.fg(.white)
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Continue").tint(#FF2D55)
+    }
+  }
+}

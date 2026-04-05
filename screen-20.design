@@ -1,0 +1,66 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 5 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.5).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("What do you\npost about?").title.bold.fg(.white)
+          T("Pick your main niches").subheadline.fg(.white.opacity(0.4))
+        }
+        Grid(cols:2, sp:12) {
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"face.smiling.inverse").f(28).fg(#FFD700)
+            T("Comedy").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#FFD700.opacity(0.15)).r(12).border(#FFD700, w:1, r:12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"figure.dance").f(28).fg(#FF2D55)
+            T("Dance").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#FF2D55.opacity(0.15)).r(12).border(#FF2D55, w:1, r:12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"book.fill").f(28).fg(.white.opacity(0.4))
+            T("Education").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"fork.knife").f(28).fg(.white.opacity(0.4))
+            T("Food").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"tshirt.fill").f(28).fg(.white.opacity(0.4))
+            T("Fashion").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"figure.run").f(28).fg(.white.opacity(0.4))
+            T("Fitness").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"desktopcomputer").f(28).fg(.white.opacity(0.4))
+            T("Tech").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"sparkles").f(28).fg(.white.opacity(0.4))
+            T("Beauty").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"airplane").f(28).fg(.white.opacity(0.4))
+            T("Travel").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+          VS(sp:8, al:.center, py:20) {
+            Img(sys:"gamecontroller.fill").f(28).fg(.white.opacity(0.4))
+            T("Gaming").subheadline.bold.fg(.white)
+          }.frame(maxW:.inf).bg(#1C1C1E).r(12)
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Continue").tint(#FF2D55)
+    }
+  }
+}

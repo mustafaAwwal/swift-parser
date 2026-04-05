@@ -1,0 +1,66 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 3 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.3).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("How many followers\ndo you have?").title.bold.fg(.white)
+          T("This helps us personalize your plan").subheadline.fg(.white.opacity(0.4))
+        }
+        VS(sp:12) {
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Just starting").subheadline.bold.fg(.white)
+              T("0 – 1,000 followers").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"seedling").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Growing").subheadline.bold.fg(.white)
+              T("1K – 10K followers").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"leaf.fill").f(20).fg(#FF2D55)
+          }.bg(#FF2D55.opacity(0.15)).r(12).border(#FF2D55, w:1, r:12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Established").subheadline.bold.fg(.white)
+              T("10K – 100K followers").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"tree.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Influencer").subheadline.bold.fg(.white)
+              T("100K – 1M followers").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"star.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+          HS(p:16) {
+            VS(sp:2, al:.leading) {
+              T("Celebrity").subheadline.bold.fg(.white)
+              T("1M+ followers").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"crown.fill").f(20).fg(.white.opacity(0.4))
+          }.bg(#1C1C1E).r(12)
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Continue").tint(#FF2D55)
+    }
+  }
+}

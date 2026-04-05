@@ -1,0 +1,80 @@
+ZS {
+  Rect.fg(#0F0F0F).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Img(sys:"chevron.left").f(18).fg(.white)
+      Spacer
+      T("Step 7 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+      Spacer.frame(w:18)
+    }
+    ProgressView(0.7).tint(#FF2D55).px(20).pt(4)
+    Scroll {
+      VS(sp:24, al:.leading, px:20, pt:24, pb:32) {
+        VS(sp:8, al:.leading) {
+          T("What's holding\nyou back?").title.bold.fg(.white)
+          T("Select all that apply").subheadline.fg(.white.opacity(0.4))
+        }
+        VS(sp:12) {
+          HS(sp:14, p:16) {
+            Img(sys:"lightbulb.slash.fill").f(20).fg(#FF2D55)
+            VS(sp:2, al:.leading) {
+              T("No content ideas").subheadline.bold.fg(.white)
+              T("Staring at a blank screen").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"checkmark.circle.fill").f(22).fg(#FF2D55)
+          }.bg(#FF2D55.opacity(0.15)).r(12).border(#FF2D55, w:1, r:12)
+          HS(sp:14, p:16) {
+            Img(sys:"eye.slash.fill").f(20).fg(#FF2D55)
+            VS(sp:2, al:.leading) {
+              T("Low views").subheadline.bold.fg(.white)
+              T("Nobody's seeing my content").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Img(sys:"checkmark.circle.fill").f(22).fg(#FF2D55)
+          }.bg(#FF2D55.opacity(0.15)).r(12).border(#FF2D55, w:1, r:12)
+          HS(sp:14, p:16) {
+            Img(sys:"bubble.left.and.bubble.right").f(20).fg(.white.opacity(0.4))
+            VS(sp:2, al:.leading) {
+              T("No engagement").subheadline.bold.fg(.white)
+              T("Likes and comments are dead").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+          HS(sp:14, p:16) {
+            Img(sys:"bolt.slash.fill").f(20).fg(.white.opacity(0.4))
+            VS(sp:2, al:.leading) {
+              T("Can't go viral").subheadline.bold.fg(.white)
+              T("Stuck at the same level").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+          HS(sp:14, p:16) {
+            Img(sys:"chart.line.downtrend.xyaxis").f(20).fg(.white.opacity(0.4))
+            VS(sp:2, al:.leading) {
+              T("Don't know trends").subheadline.bold.fg(.white)
+              T("Always late to the wave").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+          HS(sp:14, p:16) {
+            Img(sys:"battery.25percent").f(20).fg(.white.opacity(0.4))
+            VS(sp:2, al:.leading) {
+              T("Burnout").subheadline.bold.fg(.white)
+              T("Content creation feels like a chore").caption.fg(.white.opacity(0.4))
+            }
+            Spacer
+            Circle.stroke(.white.opacity(0.2), w:1.5).frame(w:22,h:22)
+          }.bg(#1C1C1E).r(12)
+        }
+      }
+    }
+    VS(px:20, pb:16) {
+      B.cta("Continue").tint(#FF2D55)
+    }
+  }
+}

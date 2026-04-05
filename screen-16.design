@@ -1,0 +1,42 @@
+ZS {
+  LG(#1A0A1E, #0F0F0F, dir:.down).ignoresSafeArea
+  VS(sp:0) {
+    HS(px:20, py:8) {
+      Spacer
+      T("Step 1 of 10").caption.fg(.white.opacity(0.4))
+      Spacer
+    }
+    ProgressView(0.1).tint(#FF2D55).px(20)
+    Spacer
+    VS(sp:24, al:.center, px:32) {
+      ZS {
+        Circle.fg(#FF2D55.opacity(0.15)).frame(w:120,h:120)
+        Circle.fg(#FF2D55.opacity(0.3)).frame(w:90,h:90)
+        Img(sys:"flame.fill").f(44).fg(#FF2D55)
+      }
+      VS(sp:8, al:.center) {
+        T("CreatorLab").f(34).bold.fg(.white)
+        T("Your AI-powered path to\nTikTok stardom").subheadline.fg(.white.opacity(0.5)).multiline(.center)
+      }
+      VS(sp:6, al:.center) {
+        HS(sp:8) {
+          Img(sys:"chart.line.uptrend.xyaxis").f(14).fg(#00F2EA)
+          T("Grow your audience with AI insights").caption.fg(.white.opacity(0.6))
+        }
+        HS(sp:8) {
+          Img(sys:"dollarsign.circle").f(14).fg(#00F2EA)
+          T("Monetize your content faster").caption.fg(.white.opacity(0.6))
+        }
+        HS(sp:8) {
+          Img(sys:"sparkles").f(14).fg(#00F2EA)
+          T("Go viral with data-driven strategy").caption.fg(.white.opacity(0.6))
+        }
+      }.pt(8)
+    }
+    Spacer
+    VS(sp:12, px:20, pb:16) {
+      B.cta("Get Started").tint(#FF2D55)
+      T("Already have an account? Log in").caption.fg(.white.opacity(0.4)).multiline(.center)
+    }
+  }
+}

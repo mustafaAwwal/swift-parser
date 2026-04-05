@@ -471,6 +471,46 @@ The `ZS + Rect.ignoresSafeArea` pattern is ONLY for full-screen backgrounds or s
 
 ---
 
+# Avoiding Bad Designs
+
+## Text wrapping in equal-width cards
+When using N-up stat cards in an `HS` with `.frame(maxW:.inf)`, long text wraps to a second line while shorter siblings stay on one line — the row looks broken and uneven.
+- **Keep big numbers short**: max ~4-5 chars. "30d" not "30 days", "$1.2K" not "$1,200".
+- **Keep subtitles short**: max ~8 chars. "revenue" not "est. revenue".
+- **Mental test**: at ~1/3 screen width minus padding, will this text wrap?
+```
+// BAD — "30 days" wraps, "$1.2K" doesn't, row looks broken
+HS(sp:12) {
+  VS(al:.center, p:16) { T("30 days").f(22).bold  T("to 10K").caption }.frame(maxW:.inf)
+  VS(al:.center, p:16) { T("$1.2K").f(22).bold  T("est. revenue").caption }.frame(maxW:.inf)
+}
+
+// GOOD — all values fit on one line
+HS(sp:12) {
+  VS(al:.center, p:16) { T("30d").f(22).bold  T("to 10K").caption }.frame(maxW:.inf)
+  VS(al:.center, p:16) { T("$1.2K").f(22).bold  T("revenue").caption }.frame(maxW:.inf)
+}
+```
+
+## Center-aligned stacks with mixed-width children
+A center-aligned `VS` with rows of different widths will align each row independently — left edges become ragged and the card looks misaligned. Use `al:.leading` on the content stack instead.
+```
+// BAD — each row centers independently, left edges are ragged
+VS(sp:12, al:.center, p:16) {
+  HS(sp:12) { Img(sys:"sun.max.fill")  T("Today's Focus").bold }
+  HS(sp:12) { Img(sys:"clock")  T("Best time: 7 PM").caption }
+}
+
+// GOOD — rows align to leading edge, looks clean
+VS(sp:12, al:.leading, p:16) {
+  HS(sp:12) { Img(sys:"sun.max.fill")  T("Today's Focus").bold }
+  HS(sp:12) { Img(sys:"clock")  T("Best time: 7 PM").caption }
+}
+```
+If the card itself needs to be centered on screen, use `.frame(maxW:.inf)` on the outer container — don't center-align the inner content.
+
+---
+
 # Rules
 
 ## Critical
